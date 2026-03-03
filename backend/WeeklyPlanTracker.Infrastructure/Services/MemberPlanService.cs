@@ -38,7 +38,7 @@ public class MemberPlanService : IMemberPlanService
         };
 
         plan.TaskAssignments.Add(assignment);
-        plan.TotalPlannedHours = plan.TaskAssignments.Sum(t => t.CommittedHours) + dto.CommittedHours;
+        plan.TotalPlannedHours = plan.TaskAssignments.Sum(t => t.CommittedHours);
 
         _db.TaskAssignments.Add(assignment);
         await _db.SaveChangesAsync();

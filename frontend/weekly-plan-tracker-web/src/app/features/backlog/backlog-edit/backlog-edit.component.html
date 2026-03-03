@@ -1,0 +1,72 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEdit ? "✏️ Edit Backlog Item" : "➕ New Backlog Item" }}</h1>
+    </div>
+    <button
+      class="btn btn-ghost btn-sm"
+      (click)="router.navigate(['/backlog'])"
+    >
+      ← Back
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="empty-state"><p>Loading...</p></div>
+
+  <div class="card" style="max-width: 560px" *ngIf="!loading">
+    <div class="form-group">
+      <label>Title *</label>
+      <input
+        type="text"
+        [(ngModel)]="form.title"
+        placeholder="e.g. Fix login bug"
+      />
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea
+        [(ngModel)]="form.description"
+        placeholder="What needs to be done?"
+      ></textarea>
+    </div>
+    <div class="form-group">
+      <label>Category *</label>
+      <select [(ngModel)]="form.category">
+        <option value="ClientFocused">Client Focused</option>
+        <option value="TechDebt">Tech Debt</option>
+        <option value="RAndD">R&D</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Estimated Effort (hours)</label>
+      <input
+        type="number"
+        [(ngModel)]="form.estimatedEffort"
+        placeholder="e.g. 4"
+        min="0.5"
+        step="0.5"
+      />
+    </div>
+    <div
+      style="
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+      "
+    >
+      <button class="btn btn-ghost" (click)="router.navigate(['/backlog'])">
+        Cancel
+      </button>
+      <button
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="!form.title.trim() || saving"
+      >
+        {{
+          saving ? "Saving..." : isEdit ? "💾 Save Changes" : "➕ Create Item"
+        }}
+      </button>
+    </div>
+  </div>
+</div>

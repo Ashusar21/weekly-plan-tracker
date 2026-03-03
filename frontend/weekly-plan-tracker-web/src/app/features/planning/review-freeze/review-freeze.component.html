@@ -1,0 +1,200 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>🧊 Review & Freeze Plan</h1>
+      <p>Review all member plans before locking the week</p>
+    </div>
+    <button class="btn btn-ghost btn-sm" (click)="router.navigate(['/hub'])">
+      ← Back
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="empty-state"><p>Loading plans...</p></div>
+
+  <div *ngIf="!loading && !week" class="empty-state">
+    <div class="empty-icon">📅</div>
+    <p>No active week in Planning state.</p>
+  </div>
+
+  <div *ngIf="!loading && week">
+    <div class="card mb-2">
+      <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem">
+        📊 Category Allocations
+      </h3>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap">
+        <div
+          *ngFor="let alloc of week.categoryAllocations"
+          style="
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            text-align: center;
+          "
+        >
+          <span class="cat-badge" [ngClass]="categoryClass(alloc.category)">{{
+            alloc.categoryLabel
+          }}</span>
+          <div style="font-size: 1.3rem; font-weight: 800; margin-top: 0.4rem">
+            {{ alloc.percentage }}%
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-muted)">
+            {{ alloc.budgetHours }}h budget
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-2">
+      <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem">
+        👥 Member Plans
+      </h3>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem">
+        <div
+          *ngFor="let plan of plans"
+          style="
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+          "
+          [style.border-color]="
+            plan.isReady ? 'var(--success)' : 'var(--border)'
+          "
+        >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 0.5rem;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 0.5rem">
+              <div
+                style="
+                  width: 28px;
+                  height: 28px;
+                  border-radius: 50%;
+                  background: var(--primary);
+                  color: #fff;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  font-size: 0.8rem;
+                "
+              >
+                {{ plan.memberName[0].toUpperCase() }}
+              </div>
+              <span style="font-weight: 600">{{ plan.memberName }}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem">
+              <span
+                style="font-size: 0.82rem; font-weight: 600"
+                [style.color]="
+                  plan.totalPlannedHours === 30
+                    ? 'var(--success)'
+                    : 'var(--warning)'
+                "
+              >
+                {{ plan.totalPlannedHours }}h / 30h
+              </span>
+              <span
+                class="badge"
+                [style.background]="
+                  plan.isReady ? 'var(--success-light)' : 'var(--warning-light)'
+                "
+                [style.color]="
+                  plan.isReady ? 'var(--success)' : 'var(--warning)'
+                "
+              >
+                {{ plan.isReady ? "✅ Ready" : "⏳ Planning" }}
+              </span>
+            </div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.4rem">
+            <span
+              *ngFor="let t of plan.taskAssignments"
+              style="
+                font-size: 0.75rem;
+                padding: 0.2rem 0.5rem;
+                border-radius: var(--radius-sm);
+                background: var(--bg);
+                border: 1px solid var(--border);
+              "
+            >
+              {{ t.backlogItemTitle }} ({{ t.committedHours }}h)
+            </span>
+            <span
+              *ngIf="!plan.taskAssignments.length"
+              style="font-size: 0.78rem; color: var(--text-muted)"
+            >
+              No items planned
+            </span>
+          </div>
+        </div>
+        <div
+          *ngIf="plans.length === 0"
+          class="empty-state"
+          style="padding: 1rem"
+        >
+          <p>No plans submitted yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="card"
+      [style.border-color]="allReady ? 'var(--success)' : 'var(--border)'"
+      style="border-width: 2px; border-style: solid"
+    >
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 1rem;
+        "
+      >
+        <div>
+          <h3 style="font-size: 0.95rem; font-weight: 700">
+            {{
+              allReady
+                ? "✅ All members ready — you can freeze!"
+                : "⏳ Waiting for members to mark ready"
+            }}
+          </h3>
+          <p
+            style="
+              font-size: 0.82rem;
+              color: var(--text-muted);
+              margin-top: 0.2rem;
+            "
+          >
+            {{ readyCount }} / {{ totalCount }} members ready
+          </p>
+        </div>
+        <button
+          class="btn btn-primary btn-lg"
+          [disabled]="!allReady"
+          (click)="showFreezeModal = true"
+        >
+          🧊 Freeze Plan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-confirm-modal
+  *ngIf="showFreezeModal"
+  title="Freeze the Plan?"
+  message="Once frozen, members cannot add or remove items. They can only update progress. Are you sure?"
+  confirmLabel="Yes, Freeze It"
+  [confirmDanger]="false"
+  (confirmed)="freeze()"
+  (cancelled)="showFreezeModal = false"
+>
+</app-confirm-modal>

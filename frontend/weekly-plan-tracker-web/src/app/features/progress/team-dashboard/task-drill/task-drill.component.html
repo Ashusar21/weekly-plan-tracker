@@ -1,0 +1,111 @@
+<div class="page-container">
+  <button
+    class="btn btn-ghost btn-sm mb-2"
+    (click)="router.navigate(['/team-progress'])"
+  >
+    ← Go Back
+  </button>
+
+  <div *ngIf="loading" class="empty-state"><p>Loading...</p></div>
+
+  <div *ngIf="!loading">
+    <!-- Task Detail Card -->
+    <h1
+      style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1rem"
+      *ngIf="task"
+    >
+      {{ task.backlogItemTitle }}
+    </h1>
+
+    <div class="card mb-2" *ngIf="task">
+      <p style="margin-bottom: 0.4rem">
+        <strong>Category:</strong>
+        <span class="cat-badge ml-1" [ngClass]="categoryClass(task.category)">{{
+          task.categoryLabel
+        }}</span>
+      </p>
+      <p style="margin-bottom: 0.4rem" *ngIf="task.backlogItemDescription">
+        <strong>Description:</strong> {{ task.backlogItemDescription }}
+      </p>
+      <p style="margin-bottom: 0.4rem">
+        <strong>Committed:</strong> {{ task.committedHours }}h
+      </p>
+      <p style="margin-bottom: 0.4rem">
+        <strong>Done:</strong> {{ task.hoursCompleted }}h
+      </p>
+      <p style="margin-bottom: 0">
+        <strong>Status:</strong>
+        <span
+          class="status-badge ml-1"
+          [ngClass]="statusClass(task.progressStatus)"
+        >
+          {{ task.progressStatusLabel }}
+        </span>
+      </p>
+    </div>
+
+    <!-- All members assigned -->
+    <div class="card mb-2" *ngIf="allAssignments.length > 1">
+      <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.75rem">
+        All members assigned to this item
+      </h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Committed</th>
+              <th>Done</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of allAssignments">
+              <td style="font-weight: 500">{{ a.backlogItemTitle }}</td>
+              <td>{{ a.committedHours }}h</td>
+              <td>{{ a.hoursCompleted }}h</td>
+              <td>
+                <span
+                  class="status-badge"
+                  [ngClass]="statusClass(a.progressStatus)"
+                >
+                  {{ a.progressStatusLabel }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Update History -->
+    <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem">
+      Update History
+    </h4>
+
+    <div
+      *ngIf="history.length === 0"
+      style="
+        padding: 1rem 1.25rem;
+        background: var(--primary-light);
+        border-left: 4px solid var(--primary);
+        border-radius: var(--radius-sm);
+        font-size: 0.88rem;
+      "
+    >
+      No progress updates yet.
+    </div>
+
+    <div *ngFor="let h of history" class="card mb-2" style="font-size: 0.85rem">
+      <p style="margin-bottom: 0.3rem">
+        <strong>{{ h.timestamp | date: "MMM d, h:mm a" }}</strong>
+        — {{ h.updatedByName }}
+      </p>
+      <p style="margin-bottom: 0.2rem; color: var(--text-secondary)">
+        Hours: {{ h.previousHoursCompleted }} → {{ h.newHoursCompleted }} |
+        Status: {{ h.previousStatus }} → {{ h.newStatus }}
+      </p>
+      <p *ngIf="h.note" style="color: var(--text-muted)">Note: {{ h.note }}</p>
+    </div>
+  </div>
+</div>

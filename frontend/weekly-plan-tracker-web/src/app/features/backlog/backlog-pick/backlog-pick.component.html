@@ -1,0 +1,68 @@
+<div class="page-container">
+  <div class="page-header">
+    <div><h1>📋 Pick a Backlog Item</h1></div>
+    <button
+      class="btn btn-ghost btn-sm"
+      (click)="router.navigate(['/plan-my-work'])"
+    >
+      ← Back
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="empty-state"><p>Loading...</p></div>
+
+  <div class="card" *ngIf="!loading">
+    <div *ngIf="items.length === 0" class="empty-state">
+      <div class="empty-icon">📋</div>
+      <p>No available items.</p>
+    </div>
+    <div
+      *ngFor="let item of items"
+      style="
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+      "
+    >
+      <div style="flex: 1">
+        <div style="font-weight: 500">{{ item.title }}</div>
+        <div
+          style="
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            align-items: center;
+          "
+        >
+          <span class="cat-badge" [ngClass]="categoryClass(item.category)">{{
+            item.categoryLabel
+          }}</span>
+          <span
+            style="font-size: 0.75rem; color: var(--text-muted)"
+            *ngIf="item.estimatedEffort"
+            >~{{ item.estimatedEffort }}h</span
+          >
+        </div>
+      </div>
+      <input
+        type="number"
+        [(ngModel)]="hoursMap[item.id]"
+        placeholder="hrs"
+        min="0.5"
+        step="0.5"
+        style="
+          width: 65px;
+          background: var(--bg-input);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          padding: 0.35rem 0.5rem;
+          color: var(--text-primary);
+          font-size: 0.85rem;
+        "
+      />
+      <button class="btn btn-primary btn-sm" (click)="add(item)">Add</button>
+    </div>
+  </div>
+</div>

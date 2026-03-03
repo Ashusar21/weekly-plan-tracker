@@ -1,0 +1,314 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>✏️ Plan My Work</h1>
+      <p>Commit to backlog items for this week (30h budget)</p>
+    </div>
+    <button class="btn btn-ghost btn-sm" (click)="router.navigate(['/hub'])">
+      ← Back
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="empty-state"><p>Loading your plan...</p></div>
+
+  <div *ngIf="!loading && !week" class="empty-state">
+    <div class="empty-icon">📅</div>
+    <p>No active planning week. Ask the team lead to set one up.</p>
+  </div>
+
+  <div *ngIf="!loading && week">
+    <!-- Hours Budget Bar -->
+    <div
+      class="card mb-2"
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 1rem 1.25rem;
+      "
+    >
+      <div>
+        <span
+          style="
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+          "
+          >Hours Budget</span
+        >
+        <div style="font-size: 1.4rem; font-weight: 800; margin-top: 0.2rem">
+          <span
+            [style.color]="
+              remainingHours < 0 ? 'var(--danger)' : 'var(--text-primary)'
+            "
+          >
+            {{ plan?.totalPlannedHours ?? 0 }}
+          </span>
+          <span style="color: var(--text-muted); font-size: 1rem">
+            / 30h planned</span
+          >
+        </div>
+      </div>
+      <div style="flex: 1; min-width: 140px">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+            font-size: 0.78rem;
+          "
+        >
+          <span style="color: var(--text-muted)"
+            >{{ remainingHours }}h remaining</span
+          >
+          <span
+            style="font-weight: 600"
+            [style.color]="
+              plan?.isReady ? 'var(--success)' : 'var(--text-muted)'
+            "
+          >
+            {{ plan?.isReady ? "✅ Ready" : "⏳ Not Ready" }}
+          </span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div
+            class="progress-bar-fill"
+            [style.width.%]="((plan?.totalPlannedHours ?? 0) / 30) * 100"
+            [class.fill-success]="(plan?.totalPlannedHours ?? 0) === 30"
+            [class.fill-danger]="(plan?.totalPlannedHours ?? 0) > 30"
+          ></div>
+        </div>
+      </div>
+      <button
+        class="btn btn-sm"
+        [class.btn-success]="!plan?.isReady"
+        [class.btn-ghost]="plan?.isReady"
+        (click)="toggleReady()"
+        [disabled]="(plan?.totalPlannedHours ?? 0) !== 30"
+      >
+        {{ plan?.isReady ? "↩ Unmark Ready" : "✅ Mark as Ready" }}
+      </button>
+    </div>
+
+    <!-- Planned Items -->
+    <div class="card mb-2">
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+        "
+      >
+        <h3 style="font-size: 0.95rem; font-weight: 600">
+          My Planned Items ({{ plan?.taskAssignments?.length ?? 0 }})
+        </h3>
+        <button
+          class="btn btn-primary btn-sm"
+          (click)="openPicker()"
+          [disabled]="week.state !== 'Planning'"
+        >
+          + Add Item
+        </button>
+      </div>
+
+      <div
+        *ngIf="!plan?.taskAssignments?.length"
+        class="empty-state"
+        style="padding: 1.5rem"
+      >
+        <p>No items yet. Click "+ Add Item" to start planning.</p>
+      </div>
+
+      <div class="table-wrap" *ngIf="plan?.taskAssignments?.length">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Category</th>
+              <th>Hours</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of plan!.taskAssignments">
+              <td>
+                <div style="font-weight: 500; font-size: 0.9rem">
+                  {{ t.backlogItemTitle }}
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted)">
+                  {{ t.backlogItemDescription }}
+                </div>
+              </td>
+              <td>
+                <span class="cat-badge" [ngClass]="categoryClass(t.category)">{{
+                  t.categoryLabel
+                }}</span>
+              </td>
+              <td>
+                <div
+                  *ngIf="editingHours[t.id] === undefined"
+                  style="display: flex; align-items: center; gap: 0.4rem"
+                >
+                  <span style="font-weight: 700">{{ t.committedHours }}h</span>
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    (click)="startEditHours(t)"
+                    *ngIf="week!.state === 'Planning'"
+                  >
+                    ✏️
+                  </button>
+                </div>
+                <div
+                  *ngIf="editingHours[t.id] !== undefined"
+                  style="display: flex; gap: 0.3rem; align-items: center"
+                >
+                  <input
+                    type="number"
+                    [(ngModel)]="editingHours[t.id]"
+                    min="0.5"
+                    step="0.5"
+                    style="
+                      width: 60px;
+                      background: var(--bg-input);
+                      border: 1px solid var(--primary);
+                      border-radius: var(--radius-sm);
+                      padding: 0.2rem 0.4rem;
+                      color: var(--text-primary);
+                      font-size: 0.85rem;
+                    "
+                  />
+                  <button class="btn btn-primary btn-sm" (click)="saveHours(t)">
+                    ✓
+                  </button>
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    (click)="cancelEditHours(t.id)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </td>
+              <td>
+                <span
+                  class="status-badge"
+                  [ngClass]="statusClass(t.progressStatus)"
+                  >{{ t.progressStatusLabel }}</span
+                >
+              </td>
+              <td>
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="removeItem(t)"
+                  *ngIf="week!.state === 'Planning'"
+                >
+                  🗑
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Backlog Picker Modal -->
+<div class="modal-backdrop" *ngIf="showPicker" (click)="showPicker = false">
+  <div
+    class="modal"
+    style="max-width: 600px; max-height: 80vh; overflow-y: auto"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <h3>📋 Pick Backlog Item</h3>
+      <button class="close-btn" (click)="showPicker = false">×</button>
+    </div>
+    <p
+      style="
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 0.75rem;
+      "
+    >
+      {{ remainingHours }}h remaining in your budget
+    </p>
+    <div *ngFor="let item of backlog">
+      <div
+        *ngIf="!plannedIds.has(item.id)"
+        style="
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 0;
+          border-bottom: 1px solid var(--border);
+        "
+      >
+        <div style="flex: 1">
+          <div style="font-weight: 500; font-size: 0.9rem">
+            {{ item.title }}
+          </div>
+          <div
+            style="
+              display: flex;
+              gap: 0.5rem;
+              margin-top: 0.25rem;
+              align-items: center;
+            "
+          >
+            <span class="cat-badge" [ngClass]="categoryClass(item.category)">{{
+              item.categoryLabel
+            }}</span>
+            <span
+              style="font-size: 0.75rem; color: var(--text-muted)"
+              *ngIf="item.estimatedEffort"
+            >
+              ~{{ item.estimatedEffort }}h
+            </span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.4rem; align-items: center">
+          <input
+            type="number"
+            [(ngModel)]="addingHours[item.id]"
+            placeholder="hrs"
+            min="0.5"
+            step="0.5"
+            style="
+              width: 60px;
+              background: var(--bg-input);
+              border: 1px solid var(--border);
+              border-radius: var(--radius-sm);
+              padding: 0.3rem 0.4rem;
+              color: var(--text-primary);
+              font-size: 0.85rem;
+            "
+          />
+          <button class="btn btn-primary btn-sm" (click)="addItem(item)">
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      *ngIf="backlog.length === 0"
+      class="empty-state"
+      style="padding: 1.5rem"
+    >
+      <p>No available backlog items.</p>
+    </div>
+  </div>
+</div>
+
+<app-confirm-modal
+  *ngIf="confirmModal.show"
+  [title]="confirmModal.title"
+  [message]="confirmModal.message"
+  (confirmed)="confirmModal.action()"
+  (cancelled)="confirmModal.show = false"
+>
+</app-confirm-modal>

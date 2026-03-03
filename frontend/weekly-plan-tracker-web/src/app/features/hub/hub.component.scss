@@ -1,0 +1,42 @@
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hub-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: 1px solid var(--border);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.hub-card-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.hub-card-body {
+  flex: 1;
+  h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+  p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+}

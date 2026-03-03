@@ -1,0 +1,249 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>
+        <span class="cat-badge" [ngClass]="catClass">{{
+          category?.categoryLabel ?? categoryName
+        }}</span>
+        &nbsp;— Category Drill
+      </h1>
+      <p
+        style="margin-top: 0.4rem; font-size: 0.82rem; color: var(--text-muted)"
+      >
+        Detailed breakdown of all tasks in this category
+      </p>
+    </div>
+    <button
+      class="btn btn-ghost btn-sm"
+      (click)="router.navigate(['/team-progress'])"
+    >
+      ← Back
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="empty-state"><p>Loading...</p></div>
+
+  <div *ngIf="!loading && !category" class="empty-state">
+    <div class="empty-icon">📊</div>
+    <p>No data found for this category.</p>
+    <button
+      class="btn btn-ghost btn-sm"
+      style="margin-top: 0.75rem"
+      (click)="router.navigate(['/team-progress'])"
+    >
+      ← Back to Dashboard
+    </button>
+  </div>
+
+  <div *ngIf="!loading && category">
+    <!-- Summary Cards -->
+    <div
+      class="card mb-2"
+      style="
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        padding: 1rem 1.25rem;
+        align-items: center;
+      "
+    >
+      <div>
+        <span
+          style="
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+          "
+        >
+          Total Tasks
+        </span>
+        <div style="font-size: 1.4rem; font-weight: 800; margin-top: 0.2rem">
+          {{ category.totalTasks }}
+        </div>
+      </div>
+      <div>
+        <span
+          style="
+            font-size: 0.75rem;
+            color: var(--success);
+            font-weight: 600;
+            text-transform: uppercase;
+          "
+        >
+          Completed
+        </span>
+        <div
+          style="
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--success);
+            margin-top: 0.2rem;
+          "
+        >
+          {{ category.completedTasks }}
+        </div>
+      </div>
+      <div>
+        <span
+          style="
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+          "
+        >
+          Committed
+        </span>
+        <div style="font-size: 1.4rem; font-weight: 800; margin-top: 0.2rem">
+          {{ category.committedHours }}h
+        </div>
+      </div>
+      <div>
+        <span
+          style="
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+          "
+        >
+          Done
+        </span>
+        <div
+          style="
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 0.2rem;
+          "
+        >
+          {{ category.hoursCompleted }}h
+        </div>
+      </div>
+      <div
+        style="
+          flex: 1;
+          min-width: 160px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+            font-size: 0.78rem;
+          "
+        >
+          <span style="color: var(--text-muted)">Overall Progress</span>
+          <span style="font-weight: 700">
+            {{ pct(category.hoursCompleted, category.committedHours) }}%
+          </span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div
+            class="progress-bar-fill"
+            [style.width.%]="
+              pct(category.hoursCompleted, category.committedHours)
+            "
+            [class.fill-success]="
+              category.completedTasks === category.totalTasks
+            "
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task Table -->
+    <div class="card">
+      <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem">
+        Tasks ({{ category.tasks.length }})
+      </h3>
+
+      <div
+        *ngIf="category.tasks.length === 0"
+        class="empty-state"
+        style="padding: 1.5rem"
+      >
+        <p>No tasks in this category yet.</p>
+      </div>
+
+      <div class="table-wrap" *ngIf="category.tasks.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Hours</th>
+              <th>Progress</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let t of category.tasks"
+              style="cursor: pointer"
+              (click)="router.navigate(['/team-progress/task', t.id])"
+            >
+              <td>
+                <div style="font-weight: 500; font-size: 0.9rem">
+                  {{ t.backlogItemTitle }}
+                </div>
+                <div
+                  style="
+                    font-size: 0.75rem;
+                    color: var(--text-muted);
+                    margin-top: 0.1rem;
+                  "
+                >
+                  {{ t.backlogItemDescription }}
+                </div>
+              </td>
+              <td style="white-space: nowrap">
+                <span style="font-weight: 600">{{ t.hoursCompleted }}h</span>
+                <span style="color: var(--text-muted); font-size: 0.82rem">
+                  / {{ t.committedHours }}h</span
+                >
+                <span
+                  *ngIf="t.hoursCompleted > t.committedHours"
+                  style="
+                    color: var(--warning);
+                    font-size: 0.72rem;
+                    margin-left: 0.25rem;
+                    font-weight: 600;
+                  "
+                >
+                  OT
+                </span>
+              </td>
+              <td style="min-width: 100px">
+                <div class="progress-bar-wrap">
+                  <div
+                    class="progress-bar-fill"
+                    [style.width.%]="pct(t.hoursCompleted, t.committedHours)"
+                    [class.fill-success]="t.progressStatus === 'Completed'"
+                    [class.fill-danger]="t.progressStatus === 'Blocked'"
+                  ></div>
+                </div>
+              </td>
+              <td>
+                <span
+                  class="status-badge"
+                  [ngClass]="statusClass(t.progressStatus)"
+                >
+                  {{ t.progressStatusLabel }}
+                </span>
+              </td>
+              <td>
+                <span style="color: var(--primary); font-size: 0.85rem">→</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

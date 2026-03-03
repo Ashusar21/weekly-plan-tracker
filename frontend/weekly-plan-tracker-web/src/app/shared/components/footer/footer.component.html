@@ -1,0 +1,21 @@
+<footer class="footer">
+  <span style="font-size: 0.75rem; color: var(--text-muted)"
+    >Weekly Plan Tracker</span
+  >
+  <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap">
+    <button class="footer-btn" (click)="downloadData()">
+      📥 Download My Data
+    </button>
+    <label class="footer-btn" style="cursor: pointer; margin: 0">
+      📤 Load Data from File
+      <input
+        type="file"
+        accept=".json"
+        style="display: none"
+        (change)="loadData($event)"
+      />
+    </label>
+    <button class="footer-btn" (click)="seedData()">🌱 Seed Sample Data</button>
+    <button class="footer-btn danger" (click)="resetApp()">🗑️ Reset App</button>
+  </div>
+</footer>

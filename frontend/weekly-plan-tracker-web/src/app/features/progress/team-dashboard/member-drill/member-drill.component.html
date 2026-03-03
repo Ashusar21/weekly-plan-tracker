@@ -1,0 +1,81 @@
+<div class="page-container">
+  <button
+    class="btn btn-ghost btn-sm mb-2"
+    (click)="router.navigate(['/team-progress'])"
+  >
+    ← Go Back
+  </button>
+
+  <div *ngIf="loading" class="empty-state"><p>Loading...</p></div>
+
+  <div *ngIf="!loading && memberProgress">
+    <h1 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem">
+      {{ memberProgress.memberName }}'s Plan
+    </h1>
+    <p
+      style="
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+      "
+    >
+      Hours completed: {{ memberProgress.hoursCompleted }} of 30 ({{
+        pct(memberProgress.hoursCompleted, 30)
+      }}%)
+    </p>
+    <div class="progress-bar-wrap" style="margin-bottom: 1.25rem">
+      <div
+        class="progress-bar-fill"
+        [style.width.%]="pct(memberProgress.hoursCompleted, 30)"
+        [class.fill-success]="
+          memberProgress.completedTasks === memberProgress.totalTasks
+        "
+      ></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Category</th>
+              <th>Committed</th>
+              <th>Done</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let t of memberProgress.tasks"
+              style="cursor: pointer"
+              (click)="router.navigate(['/team-progress/task', t.id])"
+            >
+              <td style="font-weight: 500">{{ t.backlogItemTitle }}</td>
+              <td>
+                <span class="cat-badge" [ngClass]="categoryClass(t.category)">{{
+                  t.categoryLabel
+                }}</span>
+              </td>
+              <td>{{ t.committedHours }}h</td>
+              <td>{{ t.hoursCompleted }}h</td>
+              <td>
+                <span
+                  class="status-badge"
+                  [ngClass]="statusClass(t.progressStatus)"
+                >
+                  {{ t.progressStatusLabel }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !memberProgress" class="empty-state">
+    <div class="empty-icon">👤</div>
+    <p>No progress data found.</p>
+  </div>
+</div>
