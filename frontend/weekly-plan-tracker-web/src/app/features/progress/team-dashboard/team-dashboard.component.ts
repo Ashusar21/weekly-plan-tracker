@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PlanningWeekService } from '../../../core/services/planning-week.service';
 import { ProgressService } from '../../../core/services/progress.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -18,16 +18,23 @@ export class TeamDashboardComponent implements OnInit {
   week: PlanningWeek | null = null;
   progress: TeamProgress | null = null;
   loading = true;
+  weekId: string | null = null; // null = active week
 
   constructor(
     private weekService: PlanningWeekService,
     private progressService: ProgressService,
+    private route: ActivatedRoute,
     private toast: ToastService,
     public router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.weekService.getActive().subscribe({
+    this.weekId = this.route.snapshot.queryParamMap.get('weekId');
+    const week$ = this.weekId
+      ? this.weekService.getById(this.weekId)
+      : this.weekService.getActive();
+
+    week$.subscribe({
       next: (week) => {
         this.week = week;
         if (week) {
@@ -51,6 +58,10 @@ export class TeamDashboardComponent implements OnInit {
     });
   }
 
+  get isPastWeek(): boolean {
+    return !!this.weekId;
+  }
+
   pct(done: number, total: number): number {
     return total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
   }
@@ -62,5 +73,15 @@ export class TeamDashboardComponent implements OnInit {
       RAndD: 'cat-rnd',
     };
     return map[cat] ?? '';
+  }
+
+  navigateToCategory(category: string): void {
+    const extras = this.weekId ? { queryParams: { weekId: this.weekId } } : {};
+    this.router.navigate(['/team-progress/category', category], extras);
+  }
+
+  navigateToMember(memberId: string): void {
+    const extras = this.weekId ? { queryParams: { weekId: this.weekId } } : {};
+    this.router.navigate(['/team-progress/member', memberId], extras);
   }
 }
