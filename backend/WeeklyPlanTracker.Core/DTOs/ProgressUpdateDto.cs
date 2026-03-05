@@ -48,6 +48,7 @@ public class CategoryProgressDto
     public int CompletedTasks { get; set; }
     public double CommittedHours { get; set; }
     public double HoursCompleted { get; set; }
+    public double BudgetHours { get; set; }
     public List<TaskAssignmentDto> Tasks { get; set; } = new();
 }
 
@@ -60,5 +61,6 @@ public class MemberProgressDto
     public int BlockedTasks { get; set; }
     public double CommittedHours { get; set; }
     public double HoursCompleted { get; set; }
+    public double BudgetHours { get; set; }
     public List<TaskAssignmentDto> Tasks { get; set; } = new();
 }
