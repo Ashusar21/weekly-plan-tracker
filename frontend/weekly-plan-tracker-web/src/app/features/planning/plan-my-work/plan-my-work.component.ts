@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { PlanningWeekService } from '../../../core/services/planning-week.service';
 import { MemberPlanService } from '../../../core/services/member-plan.service';
 import { BacklogService } from '../../../core/services/backlog.service';
@@ -25,11 +27,16 @@ import { BacklogItem } from '../../../core/models/backlog-item.model';
 export class PlanMyWorkComponent implements OnInit {
   week: PlanningWeek | null = null;
   plan: MemberPlan | null = null;
+  allPlans: MemberPlan[] = [];
   backlog: BacklogItem[] = [];
   loading = true;
+
   showPicker = false;
-  addingHours: Record<string, number> = {};
-  editingHours: Record<string, number> = {};
+  selectedItem: BacklogItem | null = null;
+  selectedItemHours = 0;
+
+  editingTask: string | null = null;
+  editingHoursValue = 0;
   confirmModal: {
     show: boolean;
     title: string;
@@ -50,38 +57,12 @@ export class PlanMyWorkComponent implements OnInit {
     return this.auth.currentMember()?.id ?? '';
   }
 
-  ngOnInit(): void {
-    this.weekService.getActive().subscribe({
-      next: (week) => {
-        this.week = week;
-        if (week) this.loadPlan(week.id);
-        else this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+  get totalPlanned(): number {
+    return this.plan?.totalPlannedHours ?? 0;
   }
 
-  loadPlan(weekId: string): void {
-    this.planService.get(weekId, this.memberId).subscribe({
-      next: (plan) => {
-        this.plan = plan;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
-  }
-
-  openPicker(): void {
-    this.showPicker = true;
-    this.backlogService.getAll('Available').subscribe({
-      next: (items) => {
-        this.backlog = items;
-      },
-    });
+  get remainingHours(): number {
+    return 30 - this.totalPlanned;
   }
 
   get plannedIds(): Set<string> {
@@ -90,8 +71,38 @@ export class PlanMyWorkComponent implements OnInit {
     );
   }
 
-  get remainingHours(): number {
-    return 30 - (this.plan?.totalPlannedHours ?? 0);
+  getCategoryBudget(category: string): {
+    budget: number;
+    claimed: number;
+    left: number;
+  } {
+    if (!this.week) return { budget: 0, claimed: 0, left: 0 };
+    const alloc = this.week.categoryAllocations.find(
+      (a) => a.category === category,
+    );
+    const budget = alloc?.budgetHours ?? 0;
+    const claimed = this.allPlans.reduce((sum, p) => {
+      return (
+        sum +
+        p.taskAssignments
+          .filter((t) => t.category === category)
+          .reduce((s, t) => s + t.committedHours, 0)
+      );
+    }, 0);
+    return { budget, claimed, left: budget - claimed };
+  }
+
+  get categoryOrder(): string[] {
+    return ['ClientFocused', 'TechDebt', 'RAndD'];
+  }
+
+  categoryLabel(cat: string): string {
+    const map: Record<string, string> = {
+      ClientFocused: 'Client Focused',
+      TechDebt: 'Tech Debt',
+      RAndD: 'R&D',
+    };
+    return map[cat] ?? cat;
   }
 
   categoryClass(cat: string): string {
@@ -103,18 +114,59 @@ export class PlanMyWorkComponent implements OnInit {
     return map[cat] ?? '';
   }
 
-  statusClass(s: string): string {
-    const map: Record<string, string> = {
-      NotStarted: 'status-notstarted',
-      InProgress: 'status-inprogress',
-      Completed: 'status-completed',
-      Blocked: 'status-blocked',
-    };
-    return map[s] ?? '';
+  ngOnInit(): void {
+    this.weekService.getActive().subscribe({
+      next: (week) => {
+        this.week = week;
+        if (week) this.loadAllPlans(week);
+        else this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
-  addItem(item: BacklogItem): void {
-    const hrs = this.addingHours[item.id];
+  loadAllPlans(week: PlanningWeek): void {
+    const calls = week.participatingMemberIds.map((id) =>
+      this.planService.get(week.id, id).pipe(catchError(() => of(null))),
+    );
+    forkJoin(calls).subscribe({
+      next: (results) => {
+        this.allPlans = results.filter((p) => p !== null) as MemberPlan[];
+        this.plan =
+          this.allPlans.find((p) => p.memberId === this.memberId) ?? null;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
+  }
+
+  loadPlan(weekId: string): void {
+    if (!this.week) return;
+    this.loadAllPlans(this.week);
+  }
+
+  openPicker(): void {
+    this.showPicker = true;
+    this.backlogService.getAll('Available').subscribe({
+      next: (items) => {
+        this.backlog = items;
+      },
+    });
+  }
+
+  pickItem(item: BacklogItem): void {
+    this.selectedItem = item;
+    this.selectedItemHours = 0;
+  }
+
+  confirmAddItem(): void {
+    const item = this.selectedItem;
+    if (!item) return;
+    const hrs = this.selectedItemHours;
     if (!hrs || hrs <= 0) {
       this.toast.show('Enter valid hours', 'error');
       return;
@@ -123,6 +175,9 @@ export class PlanMyWorkComponent implements OnInit {
       this.toast.show(`Only ${this.remainingHours}h remaining`, 'error');
       return;
     }
+    const catLeft = this.getCategoryBudget(item.category).left;
+    if (hrs > catLeft) return; // blocked silently — inline warning shows in HTML
+
     this.planService
       .claimItem(this.week!.id, this.memberId, {
         backlogItemId: item.id,
@@ -130,12 +185,19 @@ export class PlanMyWorkComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.toast.show('Item added!');
+          this.toast.show(`Added! ${item.title} — ${hrs}h`);
+          this.selectedItem = null;
+          this.selectedItemHours = 0;
           this.showPicker = false;
           this.loadPlan(this.week!.id);
         },
         error: () => this.toast.show('Failed to add item', 'error'),
       });
+  }
+
+  cancelPickDetail(): void {
+    this.selectedItem = null;
+    this.selectedItemHours = 0;
   }
 
   removeItem(t: TaskAssignment): void {
@@ -162,26 +224,28 @@ export class PlanMyWorkComponent implements OnInit {
   }
 
   startEditHours(t: TaskAssignment): void {
-    this.editingHours[t.id] = t.committedHours;
+    this.editingTask = t.id;
+    this.editingHoursValue = t.committedHours;
   }
 
   saveHours(t: TaskAssignment): void {
-    const hrs = this.editingHours[t.id];
-    if (!hrs || hrs <= 0) return;
+    if (!this.editingHoursValue || this.editingHoursValue <= 0) return;
     this.planService
-      .updateHours(this.week!.id, this.memberId, t.id, { committedHours: hrs })
+      .updateHours(this.week!.id, this.memberId, t.id, {
+        committedHours: this.editingHoursValue,
+      })
       .subscribe({
         next: () => {
           this.toast.show('Hours updated!');
-          delete this.editingHours[t.id];
+          this.editingTask = null;
           this.loadPlan(this.week!.id);
         },
         error: () => this.toast.show('Failed', 'error'),
       });
   }
 
-  cancelEditHours(id: string): void {
-    delete this.editingHours[id];
+  cancelEdit(): void {
+    this.editingTask = null;
   }
 
   toggleReady(): void {
