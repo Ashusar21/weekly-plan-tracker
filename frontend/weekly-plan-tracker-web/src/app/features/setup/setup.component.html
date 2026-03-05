@@ -1,32 +1,66 @@
 <div class="page-container">
   <div class="setup-card card">
-    <div class="setup-icon">📋</div>
-    <h1 class="setup-title">Weekly Plan Tracker</h1>
+    <div class="setup-icon">👋</div>
+    <h1 class="setup-title">Welcome! Let's set up your team.</h1>
     <p class="setup-subtitle">
-      Let's get your team set up. Enter the first team member's name to begin.
+      Add the people on your team. Pick one person as the Team Lead.
     </p>
 
+    <!-- Add member input -->
     <div class="form-group">
-      <label>Your Name</label>
-      <input
-        type="text"
-        [(ngModel)]="memberName"
-        placeholder="e.g. Alice Chen"
-        (keyup.enter)="create()"
-        autofocus
-      />
+      <label>Add a team member</label>
+      <div class="input-row">
+        <input
+          type="text"
+          [(ngModel)]="memberName"
+          placeholder="Type a name here"
+          (keyup.enter)="addMember()"
+          maxlength="100"
+          autofocus
+        />
+        <button class="btn btn-primary" (click)="addMember()">Add</button>
+      </div>
+      @if (error) {
+        <p class="field-error">{{ error }}</p>
+      }
     </div>
 
+    <!-- Members list -->
+    @if (members.length === 0) {
+      <div class="empty-members">
+        <p>No team members added yet.</p>
+      </div>
+    }
+
+    @for (m of members; track m.name; let i = $index) {
+      <div class="member-row">
+        <div class="member-info">
+          <span class="member-name">{{ m.name }}</span>
+          @if (m.isLead) {
+            <span class="lead-badge">Team Lead</span>
+          }
+        </div>
+        <div class="member-actions">
+          @if (!m.isLead) {
+            <button class="btn btn-sm btn-secondary" (click)="makeLead(i)">Make Lead</button>
+          }
+          <button class="btn btn-sm btn-danger" (click)="removeMember(i)">Remove</button>
+        </div>
+      </div>
+    }
+
+    <!-- Finish button -->
     <button
       class="btn btn-primary w-full btn-lg"
-      (click)="create()"
-      [disabled]="!memberName.trim() || loading"
+      style="margin-top: 1.5rem"
+      (click)="finish()"
+      [disabled]="!canFinish || loading"
     >
-      {{ loading ? "Setting up..." : "🚀 Create Team & Continue" }}
+      {{ loading ? 'Setting up...' : 'Done — Go to Home Screen' }}
     </button>
 
-    <p class="setup-note">
-      The first person added becomes the team lead automatically.
-    </p>
+    @if (members.length > 0 && !members.some(m => m.isLead)) {
+      <p class="setup-note" style="color: var(--danger)">Please pick one person as the Team Lead.</p>
+    }
   </div>
 </div>
