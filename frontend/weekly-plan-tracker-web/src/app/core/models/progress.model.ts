@@ -1,4 +1,4 @@
-import { TaskAssignment, ProgressStatus } from './member-plan.model';
+import { ProgressStatus } from './member-plan.model';
 
 export interface ProgressUpdateDto {
   id: string;
@@ -20,6 +20,21 @@ export interface SubmitProgressUpdateDto {
   updatedBy: string;
 }
 
+export interface TaskProgressItem {
+  id: string;
+  backlogItemId: string;
+  backlogItemTitle: string;
+  backlogItemDescription: string;
+  category: string;
+  categoryLabel: string;
+  committedHours: number;
+  hoursCompleted: number;
+  progressStatus: ProgressStatus;
+  progressStatusLabel: string;
+  memberName: string;
+  estimatedEffort?: number;
+}
+
 export interface CategoryProgress {
   category: string;
   categoryLabel: string;
@@ -27,7 +42,8 @@ export interface CategoryProgress {
   completedTasks: number;
   committedHours: number;
   hoursCompleted: number;
-  tasks: TaskAssignment[];
+  budgetHours: number;
+  tasks: TaskProgressItem[];
 }
 
 export interface MemberProgress {
@@ -38,7 +54,7 @@ export interface MemberProgress {
   blockedTasks: number;
   committedHours: number;
   hoursCompleted: number;
-  tasks: TaskAssignment[];
+  tasks: TaskProgressItem[];
 }
 
 export interface TeamProgress {
