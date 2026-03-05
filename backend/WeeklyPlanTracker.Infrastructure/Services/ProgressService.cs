@@ -25,6 +25,7 @@ public class ProgressService : IProgressService
             .Where(mp => mp.PlanningWeekId == weekId)
             .ToListAsync();
 
+        var allocations = await _db.CategoryAllocations.Where(a => a.PlanningWeekId == weekId).ToListAsync();
         var allTasks = plans.SelectMany(mp => mp.TaskAssignments).ToList();
 
         return new TeamProgressDto
@@ -36,7 +37,7 @@ public class ProgressService : IProgressService
             InProgressTasks = allTasks.Count(t => t.ProgressStatus == ProgressStatus.InProgress),
             TotalCommittedHours = allTasks.Sum(t => t.CommittedHours),
             TotalHoursCompleted = allTasks.Sum(t => t.HoursCompleted),
-            ByCategory = BuildCategoryBreakdown(allTasks),
+            ByCategory = BuildCategoryBreakdown(plans, allocations),
             ByMember = plans.Select(mp => BuildMemberProgress(mp)).ToList()
         };
     }
@@ -55,22 +56,27 @@ public class ProgressService : IProgressService
 
     public async Task<List<ProgressUpdateDto>> GetTaskHistoryAsync(Guid assignmentId)
     {
-        return await _db.ProgressUpdates
+        var updates = await _db.ProgressUpdates
+            .Include(p => p.TaskAssignment)
+                .ThenInclude(ta => ta.MemberPlan)
+                    .ThenInclude(mp => mp.Member)
             .Where(p => p.TaskAssignmentId == assignmentId)
             .OrderByDescending(p => p.Timestamp)
-            .Select(p => new ProgressUpdateDto
-            {
-                Id = p.Id,
-                TaskAssignmentId = p.TaskAssignmentId,
-                UpdatedBy = p.UpdatedBy,
-                PreviousHoursCompleted = p.PreviousHoursCompleted,
-                NewHoursCompleted = p.NewHoursCompleted,
-                PreviousStatus = p.PreviousStatus,
-                NewStatus = p.NewStatus,
-                Note = p.Note,
-                Timestamp = p.Timestamp
-            })
             .ToListAsync();
+
+        return updates.Select(p => new ProgressUpdateDto
+        {
+            Id = p.Id,
+            TaskAssignmentId = p.TaskAssignmentId,
+            UpdatedBy = p.UpdatedBy,
+            UpdatedByName = p.TaskAssignment?.MemberPlan?.Member?.Name ?? string.Empty,
+            PreviousHoursCompleted = p.PreviousHoursCompleted,
+            NewHoursCompleted = p.NewHoursCompleted,
+            PreviousStatus = p.PreviousStatus,
+            NewStatus = p.NewStatus,
+            Note = p.Note,
+            Timestamp = p.Timestamp
+        }).ToList();
     }
 
     public async Task<TaskAssignmentDto> SubmitUpdateAsync(Guid assignmentId, SubmitProgressUpdateDto dto)
@@ -114,30 +120,35 @@ public class ProgressService : IProgressService
         };
     }
 
-    private static List<CategoryProgressDto> BuildCategoryBreakdown(List<TaskAssignment> tasks)
+    private static List<CategoryProgressDto> BuildCategoryBreakdown(List<MemberPlan> plans, List<CategoryAllocation> allocations)
     {
-        return tasks
-            .GroupBy(t => t.BacklogItem.Category)
+        var tasksWithMember = plans
+            .SelectMany(mp => mp.TaskAssignments.Select(t => (Task: t, MemberName: mp.Member?.Name ?? string.Empty)))
+            .ToList();
+        return tasksWithMember
+            .GroupBy(x => x.Task.BacklogItem.Category)
             .Select(g => new CategoryProgressDto
             {
                 Category = g.Key.ToString(),
                 CategoryLabel = GetCategoryLabel(g.Key),
+                BudgetHours = allocations.FirstOrDefault(a => a.Category == g.Key)?.BudgetHours ?? 0,
                 TotalTasks = g.Count(),
-                CompletedTasks = g.Count(t => t.ProgressStatus == ProgressStatus.Completed),
-                CommittedHours = g.Sum(t => t.CommittedHours),
-                HoursCompleted = g.Sum(t => t.HoursCompleted),
-                Tasks = g.Select(t => new TaskAssignmentDto
+                CompletedTasks = g.Count(x => x.Task.ProgressStatus == ProgressStatus.Completed),
+                CommittedHours = g.Sum(x => x.Task.CommittedHours),
+                HoursCompleted = g.Sum(x => x.Task.HoursCompleted),
+                Tasks = g.Select(x => new TaskAssignmentDto
                 {
-                    Id = t.Id,
-                    BacklogItemId = t.BacklogItemId,
-                    BacklogItemTitle = t.BacklogItem.Title,
-                    BacklogItemDescription = t.BacklogItem.Description,
-                    Category = t.BacklogItem.Category,
-                    CategoryLabel = GetCategoryLabel(t.BacklogItem.Category),
-                    CommittedHours = t.CommittedHours,
-                    HoursCompleted = t.HoursCompleted,
-                    ProgressStatus = t.ProgressStatus,
-                    ProgressStatusLabel = GetStatusLabel(t.ProgressStatus)
+                    Id = x.Task.Id,
+                    BacklogItemId = x.Task.BacklogItemId,
+                    BacklogItemTitle = x.Task.BacklogItem.Title,
+                    BacklogItemDescription = x.Task.BacklogItem.Description,
+                    Category = x.Task.BacklogItem.Category,
+                    CategoryLabel = GetCategoryLabel(x.Task.BacklogItem.Category),
+                    CommittedHours = x.Task.CommittedHours,
+                    HoursCompleted = x.Task.HoursCompleted,
+                    ProgressStatus = x.Task.ProgressStatus,
+                    ProgressStatusLabel = GetStatusLabel(x.Task.ProgressStatus),
+                    MemberName = x.MemberName
                 }).ToList()
             })
             .ToList();
@@ -163,7 +174,8 @@ public class ProgressService : IProgressService
             CommittedHours = t.CommittedHours,
             HoursCompleted = t.HoursCompleted,
             ProgressStatus = t.ProgressStatus,
-            ProgressStatusLabel = GetStatusLabel(t.ProgressStatus)
+            ProgressStatusLabel = GetStatusLabel(t.ProgressStatus),
+            MemberName = mp.Member?.Name ?? string.Empty
         }).ToList()
     };
 

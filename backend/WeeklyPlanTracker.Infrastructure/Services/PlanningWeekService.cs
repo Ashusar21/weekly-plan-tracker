@@ -49,7 +49,6 @@ public class PlanningWeekService : IPlanningWeekService
 
     public async Task<PlanningWeekDto> CreateAsync(CreatePlanningWeekDto dto)
     {
-        // Execution runs Wed–Mon following the planning Tuesday
         var execStart = dto.PlanningDate.AddDays(1);
         var execEnd = dto.PlanningDate.AddDays(6);
         int memberCount = dto.ParticipatingMemberIds.Count;
@@ -64,7 +63,6 @@ public class PlanningWeekService : IPlanningWeekService
             State = WeekState.Setup
         };
 
-        // Create category allocations
         week.CategoryAllocations = new List<CategoryAllocation>
         {
             new() { Category = Category.ClientFocused, Percentage = dto.ClientFocusedPercent,
@@ -75,7 +73,6 @@ public class PlanningWeekService : IPlanningWeekService
                     BudgetHours = totalCapacity * dto.RAndDPercent / 100.0 }
         };
 
-        // Create a member plan slot for each participating member
         week.MemberPlans = dto.ParticipatingMemberIds
             .Select(mid => new MemberPlan { MemberId = mid, TotalPlannedHours = 0 })
             .ToList();
@@ -98,17 +95,14 @@ public class PlanningWeekService : IPlanningWeekService
         int totalCapacity = memberCount * 30;
         week.TeamCapacity = totalCapacity;
 
-        // Update allocations
         UpdateAllocation(week, Category.ClientFocused, dto.ClientFocusedPercent, totalCapacity);
         UpdateAllocation(week, Category.TechDebt, dto.TechDebtPercent, totalCapacity);
         UpdateAllocation(week, Category.RAndD, dto.RAndDPercent, totalCapacity);
 
-        // Sync member plans — add new, keep existing
         var existingMemberIds = week.MemberPlans.Select(mp => mp.MemberId).ToHashSet();
         foreach (var mid in dto.ParticipatingMemberIds.Where(mid => !existingMemberIds.Contains(mid)))
             week.MemberPlans.Add(new MemberPlan { MemberId = mid, PlanningWeekId = id });
 
-        // Remove members no longer participating
         var toRemove = week.MemberPlans
             .Where(mp => !dto.ParticipatingMemberIds.Contains(mp.MemberId))
             .ToList();
@@ -138,12 +132,10 @@ public class PlanningWeekService : IPlanningWeekService
         if (week is null || week.State != WeekState.Planning)
             return (false, "Week is not in planning state.");
 
-        // All members must be marked ready
         var notReady = week.MemberPlans.Where(mp => !mp.IsReady).ToList();
         if (notReady.Any())
             return (false, $"{notReady.Count} member(s) have not marked themselves as ready.");
 
-        // All category percentages must sum to 100
         int total = week.CategoryAllocations.Sum(a => a.Percentage);
         if (total != 100)
             return (false, $"Category percentages sum to {total}, must equal 100.");
@@ -155,10 +147,31 @@ public class PlanningWeekService : IPlanningWeekService
 
     public async Task<bool> FinishAsync(Guid id)
     {
-        var week = await _db.PlanningWeeks.FindAsync(id);
+        var week = await _db.PlanningWeeks
+            .Include(w => w.MemberPlans)
+                .ThenInclude(mp => mp.TaskAssignments)
+            .FirstOrDefaultAsync(w => w.Id == id);
+
         if (week is null || week.State != WeekState.Frozen) return false;
 
         week.State = WeekState.Completed;
+
+        // Update backlog item statuses based on task completion
+        var allAssignments = week.MemberPlans
+            .SelectMany(mp => mp.TaskAssignments)
+            .ToList();
+
+        foreach (var assignment in allAssignments)
+        {
+            var backlogItem = await _db.BacklogItems.FindAsync(assignment.BacklogItemId);
+            if (backlogItem is null) continue;
+
+            if (assignment.ProgressStatus == ProgressStatus.Completed)
+                backlogItem.Status = BacklogItemStatus.Completed;
+            else
+                backlogItem.Status = BacklogItemStatus.Available;
+        }
+
         await _db.SaveChangesAsync();
         return true;
     }
@@ -178,7 +191,6 @@ public class PlanningWeekService : IPlanningWeekService
         return true;
     }
 
-    // Helper to update a single category allocation in place
     private static void UpdateAllocation(PlanningWeek week, Category cat, int pct, int totalCapacity)
     {
         var alloc = week.CategoryAllocations.FirstOrDefault(a => a.Category == cat);
