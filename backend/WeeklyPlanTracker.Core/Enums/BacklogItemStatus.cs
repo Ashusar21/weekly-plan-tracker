@@ -6,5 +6,6 @@ namespace WeeklyPlanTracker.Core.Enums;
 public enum BacklogItemStatus
 {
     Available = 1,
-    Archived = 2
+    Archived = 2,
+    Completed = 3
 }
