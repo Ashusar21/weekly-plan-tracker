@@ -21,8 +21,9 @@ import {
 export class BacklogListComponent implements OnInit {
   items: BacklogItem[] = [];
   loading = true;
-  filterStatus: BacklogItemStatus | '' = 'Available';
+  filterStatus: BacklogItemStatus | '' = '';
   filterCategory: Category | '' = '';
+  searchTitle = '';
   confirmModal: {
     show: boolean;
     title: string;
@@ -54,6 +55,12 @@ export class BacklogListComponent implements OnInit {
           this.loading = false;
         },
       });
+  }
+
+  get filteredItems(): BacklogItem[] {
+    if (!this.searchTitle.trim()) return this.items;
+    const q = this.searchTitle.toLowerCase();
+    return this.items.filter((i) => i.title.toLowerCase().includes(q));
   }
 
   archive(item: BacklogItem): void {

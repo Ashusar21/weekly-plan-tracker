@@ -4,33 +4,39 @@
     <h2 class="identity-title">Who are you?</h2>
     <p class="identity-subtitle">Select your name to continue</p>
 
-    <div *ngIf="loading" class="empty-state">
-      <p>Loading team members...</p>
-    </div>
-
-    <div *ngIf="!loading" class="members-list">
-      <button
-        *ngFor="let member of members"
-        class="member-btn"
-        (click)="select(member)"
-      >
-        <div class="member-avatar">{{ member.name[0].toUpperCase() }}</div>
-        <div class="member-info">
-          <span class="member-name">{{ member.name }}</span>
-          <span
-            class="badge"
-            [class.badge-lead]="member.isLead"
-            [class.badge-inactive]="!member.isLead"
-          >
-            {{ member.isLead ? "⭐ Lead" : "Member" }}
-          </span>
-        </div>
-        <span class="member-arrow">→</span>
-      </button>
-
-      <div *ngIf="members.length === 0" class="empty-state">
-        <p>No active members found.</p>
+    @if (loading) {
+      <div class="empty-state">
+        <p>Loading team members...</p>
       </div>
-    </div>
+    }
+
+    @if (!loading) {
+      <div class="members-list">
+        @for (member of members; track member) {
+          <button
+            class="member-btn"
+            (click)="select(member)"
+            >
+            <div class="member-avatar">{{ member.name[0].toUpperCase() }}</div>
+            <div class="member-info">
+              <span class="member-name">{{ member.name }}</span>
+              <span
+                class="badge"
+                [class.badge-lead]="member.isLead"
+                [class.badge-inactive]="!member.isLead"
+                >
+                {{ member.isLead ? "⭐ Lead" : "Member" }}
+              </span>
+            </div>
+            <span class="member-arrow">→</span>
+          </button>
+        }
+        @if (members.length === 0) {
+          <div class="empty-state">
+            <p>No active members found.</p>
+          </div>
+        }
+      </div>
+    }
   </div>
 </div>

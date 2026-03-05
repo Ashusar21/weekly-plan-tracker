@@ -1,9 +1,11 @@
 <div class="toast-container">
-  <div *ngFor="let toast of toasts()" class="toast"
-    [class.toast-success]="toast.type === 'success'"
-    [class.toast-error]="toast.type === 'error'"
-    [class.toast-info]="toast.type === 'info'">
-    {{ toast.message }}
-    <button class="toast-close" (click)="dismiss(toast.id)">×</button>
-  </div>
+  @for (toast of toasts(); track toast) {
+    <div class="toast"
+      [class.toast-success]="toast.type === 'success'"
+      [class.toast-error]="toast.type === 'error'"
+      [class.toast-info]="toast.type === 'info'">
+      {{ toast.message }}
+      <button class="toast-close" (click)="dismiss(toast.id)">×</button>
+    </div>
+  }
 </div>

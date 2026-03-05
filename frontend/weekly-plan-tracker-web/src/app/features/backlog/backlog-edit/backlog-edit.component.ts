@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BacklogService } from '../../../core/services/backlog.service';
@@ -9,7 +9,7 @@ import { Category } from '../../../core/models/backlog-item.model';
 @Component({
   selector: 'app-backlog-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './backlog-edit.component.html',
   styleUrls: ['./backlog-edit.component.scss'],
 })

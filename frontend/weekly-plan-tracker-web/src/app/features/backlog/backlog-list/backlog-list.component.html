@@ -52,6 +52,7 @@
         <option value="">All</option>
         <option value="Available">Available</option>
         <option value="Archived">Archived</option>
+        <option value="Completed">Completed</option>
       </select>
     </div>
     <div style="display: flex; align-items: center; gap: 0.5rem">
@@ -81,95 +82,183 @@
         <option value="RAndD">R&D</option>
       </select>
     </div>
+    <div style="flex: 1; min-width: 180px">
+      <input
+        type="text"
+        [(ngModel)]="searchTitle"
+        placeholder="Search by title..."
+        style="
+          width: 100%;
+          background: var(--bg-input);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          padding: 0.3rem 0.6rem;
+          color: var(--text-primary);
+          font-size: 0.85rem;
+        "
+      />
+    </div>
     <span style="font-size: 0.8rem; color: var(--text-muted)"
-      >{{ items.length }} items</span
+      >{{ filteredItems.length }} items</span
     >
   </div>
 
   <div class="card">
-    <div *ngIf="loading" class="empty-state"><p>Loading...</p></div>
+    @if (loading) {
+      <div class="empty-state"><p>Loading...</p></div>
+    }
 
-    <div *ngIf="!loading && items.length === 0" class="empty-state">
-      <div class="empty-icon">📋</div>
-      <p>No backlog items found.</p>
-    </div>
+    @if (!loading && filteredItems.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>No backlog items found.</p>
+      </div>
+    }
 
-    <div class="table-wrap" *ngIf="!loading && items.length > 0">
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Effort (hrs)</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of items">
-            <td>
-              <div style="font-weight: 500; font-size: 0.9rem">
-                {{ item.title }}
-              </div>
-              <div
-                style="
-                  font-size: 0.78rem;
-                  color: var(--text-muted);
-                  margin-top: 0.15rem;
-                "
-              >
-                {{ item.description }}
-              </div>
-            </td>
-            <td>
-              <span
-                class="cat-badge"
-                [ngClass]="categoryClass(item.category)"
-                >{{ item.categoryLabel }}</span
-              >
-            </td>
-            <td style="font-weight: 600">{{ item.estimatedEffort ?? "—" }}</td>
-            <td>
-              <span
-                [style.color]="
-                  item.status === 'Available'
-                    ? 'var(--success)'
-                    : 'var(--text-muted)'
-                "
-                style="font-size: 0.82rem; font-weight: 600"
-              >
-                {{ item.status === "Available" ? "● Available" : "○ Archived" }}
-              </span>
-            </td>
-            <td>
-              <div style="display: flex; gap: 0.4rem">
-                <button
-                  class="btn btn-ghost btn-sm"
-                  (click)="router.navigate(['/backlog/edit', item.id])"
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  class="btn btn-danger btn-sm"
-                  (click)="archive(item)"
-                  *ngIf="item.status === 'Available'"
-                >
-                  🗄 Archive
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    @if (!loading && filteredItems.length > 0) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Effort (hrs)</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredItems; track item) {
+              <tr>
+                <td>
+                  <div style="font-weight: 500; font-size: 0.9rem">
+                    {{ item.title }}
+                  </div>
+                  <div
+                    style="
+                      font-size: 0.78rem;
+                      color: var(--text-muted);
+                      margin-top: 0.15rem;
+                    "
+                  >
+                    {{ item.description }}
+                  </div>
+                </td>
+                <td>
+                  <span
+                    class="cat-badge"
+                    [ngClass]="categoryClass(item.category)"
+                  >
+                    {{ item.categoryLabel }}
+                  </span>
+                </td>
+                <td style="font-weight: 600">
+                  {{ item.estimatedEffort ?? "—" }}
+                </td>
+                <td>
+                  @if (item.status === "Available") {
+                    <span
+                      style="
+                        color: var(--success);
+                        font-size: 0.82rem;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.3rem;
+                      "
+                    >
+                      <span
+                        style="
+                          width: 8px;
+                          height: 8px;
+                          border-radius: 50%;
+                          background: var(--success);
+                          display: inline-block;
+                        "
+                      ></span>
+                      Available
+                    </span>
+                  } @else if (item.status === "Completed") {
+                    <span
+                      style="
+                        color: var(--primary);
+                        font-size: 0.82rem;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.3rem;
+                      "
+                    >
+                      <span
+                        style="
+                          width: 8px;
+                          height: 8px;
+                          border-radius: 50%;
+                          background: var(--primary);
+                          display: inline-block;
+                        "
+                      ></span>
+                      Completed
+                    </span>
+                  } @else {
+                    <span
+                      style="
+                        color: var(--text-muted);
+                        font-size: 0.82rem;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.3rem;
+                      "
+                    >
+                      <span
+                        style="
+                          width: 8px;
+                          height: 8px;
+                          border-radius: 50%;
+                          background: var(--text-muted);
+                          display: inline-block;
+                        "
+                      ></span>
+                      Archived
+                    </span>
+                  }
+                </td>
+                <td>
+                  <div style="display: flex; gap: 0.4rem">
+                    <button
+                      class="btn btn-ghost btn-sm"
+                      (click)="router.navigate(['/backlog/edit', item.id])"
+                      style="display: flex; align-items: center; gap: 0.3rem"
+                    >
+                      ✏️ Edit
+                    </button>
+                    @if (item.status === "Available") {
+                      <button
+                        class="btn btn-danger btn-sm"
+                        (click)="archive(item)"
+                        style="display: flex; align-items: center; gap: 0.3rem"
+                      >
+                        🗄 Archive
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
 </div>
 
-<app-confirm-modal
-  *ngIf="confirmModal.show"
-  [title]="confirmModal.title"
-  [message]="confirmModal.message"
-  (confirmed)="confirmModal.action()"
-  (cancelled)="confirmModal.show = false"
->
-</app-confirm-modal>
+@if (confirmModal.show) {
+  <app-confirm-modal
+    [title]="confirmModal.title"
+    [message]="confirmModal.message"
+    (confirmed)="confirmModal.action()"
+    (cancelled)="confirmModal.show = false"
+  >
+  </app-confirm-modal>
+}

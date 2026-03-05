@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { TeamMemberService } from '../../core/services/team-member.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,7 +9,7 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'app-identity',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './identity.component.html',
   styleUrls: ['./identity.component.scss'],
 })
