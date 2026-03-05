@@ -9,14 +9,14 @@
       </h1>
       <p
         style="margin-top: 0.4rem; font-size: 0.82rem; color: var(--text-muted)"
-        >
+      >
         Detailed breakdown of all tasks in this category
       </p>
     </div>
     <button
       class="btn btn-ghost btn-sm"
-      (click)="router.navigate(['/team-progress'])"
-      >
+      (click)="router.navigate(['/team-progress'], backExtras)"
+    >
       ← Back
     </button>
   </div>
@@ -32,8 +32,8 @@
       <button
         class="btn btn-ghost btn-sm"
         style="margin-top: 0.75rem"
-        (click)="router.navigate(['/team-progress'])"
-        >
+        (click)="router.navigate(['/team-progress'], backExtras)"
+      >
         ← Back to Dashboard
       </button>
     </div>
@@ -44,23 +44,23 @@
       <!-- Summary Cards -->
       <div
         class="card mb-2"
-      style="
-        display: flex;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-        padding: 1rem 1.25rem;
-        align-items: center;
-      "
-        >
+        style="
+          display: flex;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+          padding: 1rem 1.25rem;
+          align-items: center;
+        "
+      >
         <div>
           <span
-          style="
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            text-transform: uppercase;
-          "
-            >
+            style="
+              font-size: 0.75rem;
+              color: var(--text-secondary);
+              font-weight: 600;
+              text-transform: uppercase;
+            "
+          >
             Total Tasks
           </span>
           <div style="font-size: 1.4rem; font-weight: 800; margin-top: 0.2rem">
@@ -69,35 +69,35 @@
         </div>
         <div>
           <span
-          style="
-            font-size: 0.75rem;
-            color: var(--success);
-            font-weight: 600;
-            text-transform: uppercase;
-          "
-            >
+            style="
+              font-size: 0.75rem;
+              color: var(--success);
+              font-weight: 600;
+              text-transform: uppercase;
+            "
+          >
             Completed
           </span>
           <div
-          style="
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--success);
-            margin-top: 0.2rem;
-          "
-            >
+            style="
+              font-size: 1.4rem;
+              font-weight: 800;
+              color: var(--success);
+              margin-top: 0.2rem;
+            "
+          >
             {{ category.completedTasks }}
           </div>
         </div>
         <div>
           <span
-          style="
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            text-transform: uppercase;
-          "
-            >
+            style="
+              font-size: 0.75rem;
+              color: var(--text-secondary);
+              font-weight: 600;
+              text-transform: uppercase;
+            "
+          >
             Committed
           </span>
           <div style="font-size: 1.4rem; font-weight: 800; margin-top: 0.2rem">
@@ -106,43 +106,43 @@
         </div>
         <div>
           <span
-          style="
-            font-size: 0.75rem;
-            color: var(--primary);
-            font-weight: 600;
-            text-transform: uppercase;
-          "
-            >
+            style="
+              font-size: 0.75rem;
+              color: var(--primary);
+              font-weight: 600;
+              text-transform: uppercase;
+            "
+          >
             Done
           </span>
           <div
-          style="
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-top: 0.2rem;
-          "
-            >
+            style="
+              font-size: 1.4rem;
+              font-weight: 800;
+              color: var(--primary);
+              margin-top: 0.2rem;
+            "
+          >
             {{ category.hoursCompleted }}h
           </div>
         </div>
         <div
-        style="
-          flex: 1;
-          min-width: 160px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-        "
-          >
-          <div
           style="
+            flex: 1;
+            min-width: 160px;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.3rem;
-            font-size: 0.78rem;
+            flex-direction: column;
+            justify-content: flex-end;
           "
-            >
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 0.3rem;
+              font-size: 0.78rem;
+            "
+          >
             <span style="color: var(--text-muted)">Overall Progress</span>
             <span style="font-weight: 700">
               {{ pct(category.hoursCompleted, category.committedHours) }}%
@@ -151,12 +151,12 @@
           <div class="progress-bar-wrap">
             <div
               class="progress-bar-fill"
-            [style.width.%]="
-              pct(category.hoursCompleted, category.committedHours)
-            "
-            [class.fill-success]="
-              category.completedTasks === category.totalTasks
-            "
+              [style.width.%]="
+                pct(category.hoursCompleted, category.committedHours)
+              "
+              [class.fill-success]="
+                category.completedTasks === category.totalTasks
+              "
             ></div>
           </div>
         </div>
@@ -167,10 +167,7 @@
           Tasks ({{ category.tasks.length }})
         </h3>
         @if (category.tasks.length === 0) {
-          <div
-            class="empty-state"
-            style="padding: 1.5rem"
-            >
+          <div class="empty-state" style="padding: 1.5rem">
             <p>No tasks in this category yet.</p>
           </div>
         }
@@ -190,68 +187,78 @@
                 @for (t of category.tasks; track t) {
                   <tr
                     style="cursor: pointer"
-                    (click)="router.navigate(['/team-progress/task', t.id])"
-                    >
+                    (click)="router.navigate(['/team-progress/task', t.id], backExtras)"
+                  >
                     <td>
                       <div style="font-weight: 500; font-size: 0.9rem">
                         {{ t.backlogItemTitle }}
                       </div>
                       <div
-                  style="
-                    font-size: 0.75rem;
-                    color: var(--text-muted);
-                    margin-top: 0.1rem;
-                  "
-                        >
+                        style="
+                          font-size: 0.75rem;
+                          color: var(--text-muted);
+                          margin-top: 0.1rem;
+                        "
+                      >
                         {{ t.backlogItemDescription }}
                       </div>
                     </td>
                     <td style="white-space: nowrap">
-                      <span style="font-weight: 600">{{ t.hoursCompleted }}h</span>
-                      <span style="color: var(--text-muted); font-size: 0.82rem">
+                      <span style="font-weight: 600"
+                        >{{ t.hoursCompleted }}h</span
+                      >
+                      <span
+                        style="color: var(--text-muted); font-size: 0.82rem"
+                      >
                         / {{ t.committedHours }}h</span
-                        >
-                        @if (t.hoursCompleted > t.committedHours) {
-                          <span
-                  style="
-                    color: var(--warning);
-                    font-size: 0.72rem;
-                    margin-left: 0.25rem;
-                    font-weight: 600;
-                  "
-                            >
-                            OT
-                          </span>
-                        }
-                      </td>
-                      <td style="min-width: 100px">
-                        <div class="progress-bar-wrap">
-                          <div
-                            class="progress-bar-fill"
-                            [style.width.%]="pct(t.hoursCompleted, t.committedHours)"
-                            [class.fill-success]="t.progressStatus === 'Completed'"
-                            [class.fill-danger]="t.progressStatus === 'Blocked'"
-                          ></div>
-                        </div>
-                      </td>
-                      <td>
+                      >
+                      @if (t.hoursCompleted > t.committedHours) {
                         <span
-                          class="status-badge"
-                          [ngClass]="statusClass(t.progressStatus)"
-                          >
-                          {{ t.progressStatusLabel }}
+                          style="
+                            color: var(--warning);
+                            font-size: 0.72rem;
+                            margin-left: 0.25rem;
+                            font-weight: 600;
+                          "
+                        >
+                          OT
                         </span>
-                      </td>
-                      <td>
-                        <span style="color: var(--primary); font-size: 0.85rem">→</span>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-        </div>
+                      }
+                    </td>
+                    <td style="min-width: 100px">
+                      <div class="progress-bar-wrap">
+                        <div
+                          class="progress-bar-fill"
+                          [style.width.%]="
+                            pct(t.hoursCompleted, t.committedHours)
+                          "
+                          [class.fill-success]="
+                            t.progressStatus === 'Completed'
+                          "
+                          [class.fill-danger]="t.progressStatus === 'Blocked'"
+                        ></div>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        class="status-badge"
+                        [ngClass]="statusClass(t.progressStatus)"
+                      >
+                        {{ t.progressStatusLabel }}
+                      </span>
+                    </td>
+                    <td>
+                      <span style="color: var(--primary); font-size: 0.85rem"
+                        >→</span
+                      >
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
-    }
-  </div>
+    </div>
+  }
+</div>

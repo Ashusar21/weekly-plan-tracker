@@ -1,7 +1,7 @@
 <div class="page-container">
   <button
     class="btn btn-ghost btn-sm mb-2"
-    (click)="router.navigate(['/team-progress'])"
+    (click)="router.navigate(['/team-progress'], backExtras)"
     >
     ← Go Back
   </button>
@@ -24,29 +24,20 @@
         <div class="card mb-2">
           <p style="margin-bottom: 0.4rem">
             <strong>Category:</strong>
-            <span class="cat-badge ml-1" [ngClass]="categoryClass(task.category)">{{
-              task.categoryLabel
-            }}</span>
+            <span class="cat-badge ml-1" [ngClass]="categoryClass(task.category)">{{ task.categoryLabel }}</span>
           </p>
           @if (task.backlogItemDescription) {
-            <p style="margin-bottom: 0.4rem">
-              <strong>Description:</strong> {{ task.backlogItemDescription }}
-            </p>
+            <p style="margin-bottom: 0.4rem"><strong>Description:</strong> {{ task.backlogItemDescription }}</p>
           }
-          <p style="margin-bottom: 0.4rem">
-            <strong>Committed:</strong> {{ task.committedHours }}h
-          </p>
-          <p style="margin-bottom: 0.4rem">
-            <strong>Done:</strong> {{ task.hoursCompleted }}h
-          </p>
+          @if (task.estimatedEffort) {
+            <p style="margin-bottom: 0.4rem"><strong>Estimate:</strong> {{ task.estimatedEffort }}h</p>
+          }
+          <p style="margin-bottom: 0.4rem"><strong>Assigned to:</strong> {{ task.memberName }}</p>
+          <p style="margin-bottom: 0.4rem"><strong>Committed:</strong> {{ task.committedHours }}h</p>
+          <p style="margin-bottom: 0.4rem"><strong>Done:</strong> {{ task.hoursCompleted }}h</p>
           <p style="margin-bottom: 0">
             <strong>Status:</strong>
-            <span
-              class="status-badge ml-1"
-              [ngClass]="statusClass(task.progressStatus)"
-              >
-              {{ task.progressStatusLabel }}
-            </span>
+            <span class="status-badge ml-1" [ngClass]="statusClass(task.progressStatus)">{{ task.progressStatusLabel }}</span>
           </p>
         </div>
       }
@@ -69,7 +60,7 @@
               <tbody>
                 @for (a of allAssignments; track a) {
                   <tr>
-                    <td style="font-weight: 500">{{ a.backlogItemTitle }}</td>
+                    <td style="font-weight: 500">{{ a.memberName }}</td>
                     <td>{{ a.committedHours }}h</td>
                     <td>{{ a.hoursCompleted }}h</td>
                     <td>

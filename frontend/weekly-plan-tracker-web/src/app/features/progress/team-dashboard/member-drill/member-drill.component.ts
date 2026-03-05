@@ -16,6 +16,7 @@ import { MemberProgress } from '../../../../core/models/progress.model';
 export class MemberDrillComponent implements OnInit {
   memberProgress: MemberProgress | null = null;
   loading = true;
+  weekId: string | null = null;
 
   constructor(
     private weekService: PlanningWeekService,
@@ -27,7 +28,13 @@ export class MemberDrillComponent implements OnInit {
 
   ngOnInit(): void {
     const memberId = this.route.snapshot.paramMap.get('memberId')!;
-    this.weekService.getActive().subscribe({
+    this.weekId = this.route.snapshot.queryParamMap.get('weekId');
+
+    const week$ = this.weekId
+      ? this.weekService.getById(this.weekId)
+      : this.weekService.getActive();
+
+    week$.subscribe({
       next: (week) => {
         if (!week) {
           this.loading = false;
@@ -48,6 +55,10 @@ export class MemberDrillComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  get backExtras() {
+    return this.weekId ? { queryParams: { weekId: this.weekId } } : {};
   }
 
   pct(done: number, total: number): number {

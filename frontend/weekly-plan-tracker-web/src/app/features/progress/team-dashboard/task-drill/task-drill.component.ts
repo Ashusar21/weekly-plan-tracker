@@ -5,7 +5,7 @@ import { ProgressService } from '../../../../core/services/progress.service';
 import { PlanningWeekService } from '../../../../core/services/planning-week.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ProgressUpdateDto } from '../../../../core/models/progress.model';
-import { TaskAssignment } from '../../../../core/models/member-plan.model';
+import { TaskProgressItem } from '../../../../core/models/progress.model';
 
 @Component({
   selector: 'app-task-drill',
@@ -15,11 +15,12 @@ import { TaskAssignment } from '../../../../core/models/member-plan.model';
   styleUrls: ['./task-drill.component.scss'],
 })
 export class TaskDrillComponent implements OnInit {
-  task: TaskAssignment | null = null;
-  allAssignments: TaskAssignment[] = [];
+  task: TaskProgressItem | null = null;
+  allAssignments: TaskProgressItem[] = [];
   history: ProgressUpdateDto[] = [];
   loading = true;
   assignmentId = '';
+  weekId: string | null = null;
 
   constructor(
     private progressService: ProgressService,
@@ -31,33 +32,49 @@ export class TaskDrillComponent implements OnInit {
 
   ngOnInit(): void {
     this.assignmentId = this.route.snapshot.paramMap.get('assignmentId') ?? '';
+    this.weekId = this.route.snapshot.queryParamMap.get('weekId');
     if (!this.assignmentId) {
       this.router.navigate(['/team-progress']);
       return;
     }
 
     this.progressService.getTaskHistory(this.assignmentId).subscribe({
-      next: (h) => { this.history = h; this.loading = false; },
-      error: () => { this.toast.show('Failed to load history', 'error'); this.loading = false; }
+      next: (h) => {
+        this.history = h;
+        this.loading = false;
+      },
+      error: () => {
+        this.toast.show('Failed to load history', 'error');
+        this.loading = false;
+      },
     });
 
-    this.weekService.getActive().subscribe({
+    const week$ = this.weekId
+      ? this.weekService.getById(this.weekId)
+      : this.weekService.getActive();
+    week$.subscribe({
       next: (week) => {
         if (!week) return;
         this.progressService.getTeamProgress(week.id).subscribe({
           next: (progress) => {
             for (const cat of progress.byCategory) {
-              const found = cat.tasks.find(t => t.id === this.assignmentId);
+              const found = cat.tasks.find((t) => t.id === this.assignmentId);
               if (found) {
                 this.task = found;
-                this.allAssignments = cat.tasks.filter(t => t.backlogItemId === found.backlogItemId);
+                this.allAssignments = cat.tasks.filter(
+                  (t) => t.backlogItemId === found.backlogItemId,
+                );
                 break;
               }
             }
-          }
+          },
         });
-      }
+      },
     });
+  }
+
+  get backExtras() {
+    return this.weekId ? { queryParams: { weekId: this.weekId } } : {};
   }
 
   statusClass(s: string): string {
@@ -69,7 +86,6 @@ export class TaskDrillComponent implements OnInit {
     };
     return map[s] ?? '';
   }
-
   categoryClass(cat: string): string {
     const map: Record<string, string> = {
       ClientFocused: 'cat-client',

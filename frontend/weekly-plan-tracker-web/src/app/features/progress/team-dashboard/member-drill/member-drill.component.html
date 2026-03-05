@@ -1,7 +1,7 @@
 <div class="page-container">
   <button
     class="btn btn-ghost btn-sm mb-2"
-    (click)="router.navigate(['/team-progress'])"
+    (click)="router.navigate(['/team-progress'], backExtras)"
     >
     ← Go Back
   </button>
@@ -51,7 +51,7 @@
               @for (t of memberProgress.tasks; track t) {
                 <tr
                   style="cursor: pointer"
-                  (click)="router.navigate(['/team-progress/task', t.id])"
+                  (click)="router.navigate(['/team-progress/task', t.id], backExtras)"
                   >
                   <td style="font-weight: 500">{{ t.backlogItemTitle }}</td>
                   <td>

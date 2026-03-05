@@ -17,6 +17,7 @@ export class CategoryDrillComponent implements OnInit {
   category: CategoryProgress | null = null;
   loading = true;
   categoryName = '';
+  weekId: string | null = null;
 
   constructor(
     private weekService: PlanningWeekService,
@@ -28,12 +29,19 @@ export class CategoryDrillComponent implements OnInit {
 
   ngOnInit(): void {
     this.categoryName = this.route.snapshot.paramMap.get('category') ?? '';
+    this.weekId = this.route.snapshot.queryParamMap.get('weekId');
+
     if (!this.categoryName) {
       this.toast.show('Invalid category', 'error');
       this.router.navigate(['/team-progress']);
       return;
     }
-    this.weekService.getActive().subscribe({
+
+    const week$ = this.weekId
+      ? this.weekService.getById(this.weekId)
+      : this.weekService.getActive();
+
+    week$.subscribe({
       next: (week) => {
         if (!week) {
           this.loading = false;
@@ -57,6 +65,10 @@ export class CategoryDrillComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  get backExtras() {
+    return this.weekId ? { queryParams: { weekId: this.weekId } } : {};
   }
 
   pct(done: number, total: number): number {
