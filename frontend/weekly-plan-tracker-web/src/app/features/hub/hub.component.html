@@ -14,54 +14,50 @@
           class="badge ml-1"
           [style.background]="isLead() ? 'var(--warning)' : 'var(--primary)'"
           [style.color]="isLead() ? '#000' : '#fff'"
-        style="
-          padding: 0.2rem 0.6rem;
-          border-radius: 999px;
-          font-size: 0.78rem;
-          font-weight: 700;
-        "
-          >
+          style="
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+          "
+        >
           {{ isLead() ? "Team Lead" : "Team Member" }}
         </span>
       </p>
-      <!-- No active cycle notice for lead -->
+
       @if (!activeWeek && isLead()) {
         <div
-      style="
-        padding: 0.75rem 1rem;
-        background: var(--primary-light);
-        border-left: 4px solid var(--primary);
-        border-radius: var(--radius-sm);
-        margin-bottom: 1rem;
-        font-size: 0.88rem;
-      "
-          >
+          style="
+            padding: 0.75rem 1rem;
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 1rem;
+            font-size: 0.88rem;
+          "
+        >
           No planning weeks yet. Click "Start a New Week" to begin!
         </div>
       }
-      <!-- No active cycle notice for member -->
       @if (!activeWeek && !isLead()) {
         <div
-      style="
-        padding: 0.75rem 1rem;
-        background: var(--primary-light);
-        border-left: 4px solid var(--primary);
-        border-radius: var(--radius-sm);
-        margin-bottom: 1rem;
-        font-size: 0.88rem;
-      "
-          >
+          style="
+            padding: 0.75rem 1rem;
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 1rem;
+            font-size: 0.88rem;
+          "
+        >
           There's no active plan for you right now. Check back on Tuesday or ask
           your Team Lead.
         </div>
       }
+
       <div class="hub-grid">
-        <!-- LEAD: no active cycle -->
         @if (isLead() && !activeWeek) {
-          <div
-            class="hub-card card"
-            (click)="navigate('/week-setup')"
-            >
+          <div class="hub-card card" (click)="navigate('/week-setup')">
             <div class="hub-card-icon">🚀</div>
             <div class="hub-card-body">
               <h3>Start a New Week</h3>
@@ -69,12 +65,8 @@
             </div>
           </div>
         }
-        <!-- LEAD: SETUP state -->
-        @if (isLead() && state === 'Setup') {
-          <div
-            class="hub-card card"
-            (click)="navigate('/week-setup')"
-            >
+        @if (isLead() && state === "Setup") {
+          <div class="hub-card card" (click)="navigate('/week-setup')">
             <div class="hub-card-icon">⚙️</div>
             <div class="hub-card-body">
               <h3>Set Up This Week's Plan</h3>
@@ -82,12 +74,8 @@
             </div>
           </div>
         }
-        <!-- LEAD: PLANNING state - review & freeze -->
-        @if (isLead() && state === 'Planning') {
-          <div
-            class="hub-card card"
-            (click)="navigate('/review-freeze')"
-            >
+        @if (isLead() && state === "Planning") {
+          <div class="hub-card card" (click)="navigate('/review-freeze')">
             <div class="hub-card-icon">❄️</div>
             <div class="hub-card-body">
               <h3>Review and Freeze the Plan</h3>
@@ -95,12 +83,8 @@
             </div>
           </div>
         }
-        <!-- LEAD: FROZEN - team progress -->
-        @if (isLead() && state === 'Frozen') {
-          <div
-            class="hub-card card"
-            (click)="navigate('/team-progress')"
-            >
+        @if (isLead() && state === "Frozen") {
+          <div class="hub-card card" (click)="navigate('/team-progress')">
             <div class="hub-card-icon">📊</div>
             <div class="hub-card-body">
               <h3>See Team Progress</h3>
@@ -108,12 +92,17 @@
             </div>
           </div>
         }
-        <!-- LEAD: FROZEN - finish week -->
-        @if (isLead() && state === 'Frozen') {
-          <div
-            class="hub-card card"
-            (click)="showFinishModal = true"
-            >
+        @if (state === "Frozen" && isParticipating) {
+          <div class="hub-card card" (click)="navigate('/update-progress')">
+            <div class="hub-card-icon">✏️</div>
+            <div class="hub-card-body">
+              <h3>Update My Progress</h3>
+              <p>Report hours and status on your tasks.</p>
+            </div>
+          </div>
+        }
+        @if (isLead() && state === "Frozen") {
+          <div class="hub-card card" (click)="showFinishModal = true">
             <div class="hub-card-icon">✅</div>
             <div class="hub-card-body">
               <h3>Finish This Week</h3>
@@ -121,12 +110,8 @@
             </div>
           </div>
         }
-        <!-- MEMBER or LEAD: PLANNING + participating - plan my work -->
-        @if (state === 'Planning' && isParticipating) {
-          <div
-            class="hub-card card"
-            (click)="navigate('/plan-my-work')"
-            >
+        @if (state === "Planning" && isParticipating) {
+          <div class="hub-card card" (click)="navigate('/plan-my-work')">
             <div class="hub-card-icon">📝</div>
             <div class="hub-card-body">
               <h3>Plan My Work</h3>
@@ -137,25 +122,8 @@
             </div>
           </div>
         }
-        <!-- MEMBER or LEAD: FROZEN + participating - update progress -->
-        @if (state === 'Frozen' && isParticipating) {
-          <div
-            class="hub-card card"
-            (click)="navigate('/update-progress')"
-            >
-            <div class="hub-card-icon">✏️</div>
-            <div class="hub-card-body">
-              <h3>Update My Progress</h3>
-              <p>Report hours and status on your tasks.</p>
-            </div>
-          </div>
-        }
-        <!-- MEMBER: FROZEN - see team progress -->
-        @if (!isLead() && state === 'Frozen' && isParticipating) {
-          <div
-            class="hub-card card"
-            (click)="navigate('/team-progress')"
-            >
+        @if (!isLead() && state === "Frozen" && isParticipating) {
+          <div class="hub-card card" (click)="navigate('/team-progress')">
             <div class="hub-card-icon">📊</div>
             <div class="hub-card-body">
               <h3>See Team Progress</h3>
@@ -163,7 +131,6 @@
             </div>
           </div>
         }
-        <!-- COMMON: Backlog (everyone) -->
         <div class="hub-card card" (click)="navigate('/backlog')">
           <div class="hub-card-icon">📋</div>
           <div class="hub-card-body">
@@ -171,7 +138,6 @@
             <p>Add, edit, or browse work items.</p>
           </div>
         </div>
-        <!-- LEAD only: manage team -->
         @if (isLead()) {
           <div class="hub-card card" (click)="navigate('/team')">
             <div class="hub-card-icon">👥</div>
@@ -181,7 +147,6 @@
             </div>
           </div>
         }
-        <!-- COMMON: past weeks -->
         <div class="hub-card card" (click)="navigate('/past-weeks')">
           <div class="hub-card-icon">📅</div>
           <div class="hub-card-body">
@@ -189,13 +154,12 @@
             <p>Look at completed planning cycles.</p>
           </div>
         </div>
-        <!-- LEAD: PLANNING - cancel planning (danger) -->
-        @if (isLead() && state === 'Planning') {
+        @if (isLead() && state === "Planning") {
           <div
             class="hub-card card"
             style="border-color: var(--danger)"
             (click)="showCancelModal = true"
-            >
+          >
             <div class="hub-card-icon">🗑️</div>
             <div class="hub-card-body">
               <h3 style="color: var(--danger)">Cancel This Week's Planning</h3>
@@ -208,20 +172,18 @@
   }
 </div>
 
-<!-- Finish Week Modal -->
 @if (showFinishModal) {
   <app-confirm-modal
     title="Finish This Week?"
-    message="Some tasks are not finished yet. Those backlog items will go back to the backlog. Are you sure?"
+    [message]="finishModalMessage"
     confirmLabel="Yes, Finish This Week"
     [confirmDanger]="false"
     (confirmed)="finishWeek()"
     (cancelled)="showFinishModal = false"
-    >
+  >
   </app-confirm-modal>
 }
 
-<!-- Cancel Planning Modal -->
 @if (showCancelModal) {
   <app-confirm-modal
     title="Cancel Planning?"
@@ -230,6 +192,6 @@
     [confirmDanger]="true"
     (confirmed)="cancelPlanning()"
     (cancelled)="showCancelModal = false"
-    >
+  >
   </app-confirm-modal>
 }
