@@ -25,6 +25,7 @@ public class TaskAssignmentDto
     public double HoursCompleted { get; set; }
     public ProgressStatus ProgressStatus { get; set; }
     public string ProgressStatusLabel { get; set; } = string.Empty;
+    public string MemberName { get; set; } = string.Empty;
 }
 
 public class ClaimBacklogItemDto
