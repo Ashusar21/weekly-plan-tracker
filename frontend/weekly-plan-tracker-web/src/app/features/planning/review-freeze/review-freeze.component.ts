@@ -25,6 +25,7 @@ export class ReviewFreezeComponent implements OnInit {
   members: TeamMember[] = [];
   loading = true;
   showFreezeModal = false;
+  showCancelModal = false;
 
   constructor(
     private weekService: PlanningWeekService,
@@ -40,16 +41,13 @@ export class ReviewFreezeComponent implements OnInit {
         this.members = m;
       },
     });
-
     this.weekService.getActive().subscribe({
       next: (week) => {
         this.week = week;
-
         if (week && week.participatingMemberIds.length > 0) {
           const calls = week.participatingMemberIds.map((id) =>
             this.planService.get(week.id, id).pipe(catchError(() => of(null))),
           );
-
           forkJoin(calls).subscribe({
             next: (results) => {
               this.plans = results.filter((p) => p !== null) as MemberPlan[];
@@ -66,19 +64,80 @@ export class ReviewFreezeComponent implements OnInit {
     });
   }
 
-  // ✅ All members ready?
   get allReady(): boolean {
     return this.plans.length > 0 && this.plans.every((p) => p.isReady);
   }
 
-  // ✅ Total participating members
   get totalCount(): number {
     return this.week?.participatingMemberIds.length ?? 0;
   }
 
-  // ✅ Number of ready members
   get readyCount(): number {
     return this.plans.filter((p) => p.isReady).length;
+  }
+
+  // Category allocations sorted: highest budget first
+  get sortedAllocations() {
+    return [...(this.week?.categoryAllocations ?? [])].sort(
+      (a, b) => b.budgetHours - a.budgetHours,
+    );
+  }
+
+  // Members sorted: lead first, then rest in original order
+  get sortedMemberIds(): string[] {
+    if (!this.week) return [];
+    return [...this.week.participatingMemberIds].sort((a, b) => {
+      const aLead = this.members.find((m) => m.id === a)?.isLead ? 1 : 0;
+      const bLead = this.members.find((m) => m.id === b)?.isLead ? 1 : 0;
+      return bLead - aLead;
+    });
+  }
+
+  getPlanHours(memberId: string): number {
+    return (
+      this.plans.find((p) => p.memberId === memberId)?.totalPlannedHours ?? 0
+    );
+  }
+
+  getPlanReady(memberId: string): boolean {
+    return this.plans.find((p) => p.memberId === memberId)?.isReady ?? false;
+  }
+
+  categoryPlanned(category: string): number {
+    return this.plans.reduce((sum, plan) => {
+      return (
+        sum +
+        plan.taskAssignments
+          .filter((t) => t.category === category)
+          .reduce((s, t) => s + t.committedHours, 0)
+      );
+    }, 0);
+  }
+
+  get blockingReasons(): string[] {
+    const reasons: string[] = [];
+    if (!this.week) return reasons;
+
+    for (const memberId of this.sortedMemberIds) {
+      const hours = this.getPlanHours(memberId);
+      const diff = 30 - hours;
+      if (diff > 0) {
+        reasons.push(
+          `${this.memberName(memberId)} has ${hours} hours (needs ${diff} more).`,
+        );
+      }
+    }
+
+    for (const alloc of this.sortedAllocations) {
+      const planned = this.categoryPlanned(alloc.category);
+      if (planned < alloc.budgetHours) {
+        reasons.push(
+          `${alloc.categoryLabel} has ${planned}h planned but budget is ${alloc.budgetHours}h.`,
+        );
+      }
+    }
+
+    return reasons;
   }
 
   memberName(id: string): string {
@@ -96,16 +155,30 @@ export class ReviewFreezeComponent implements OnInit {
 
   freeze(): void {
     if (!this.week) return;
-
     this.weekService.freeze(this.week.id).subscribe({
       next: () => {
-        this.toast.show('🧊 Plan frozen! Work begins now.');
+        this.toast.show('Plan frozen! Work begins now.');
         this.showFreezeModal = false;
         this.router.navigate(['/hub']);
       },
       error: () => {
         this.toast.show('Failed to freeze', 'error');
         this.showFreezeModal = false;
+      },
+    });
+  }
+
+  cancelPlanning(): void {
+    if (!this.week) return;
+    this.weekService.cancel(this.week.id).subscribe({
+      next: () => {
+        this.toast.show('Planning has been canceled.');
+        this.showCancelModal = false;
+        this.router.navigate(['/hub']);
+      },
+      error: () => {
+        this.toast.show('Failed to cancel', 'error');
+        this.showCancelModal = false;
       },
     });
   }
