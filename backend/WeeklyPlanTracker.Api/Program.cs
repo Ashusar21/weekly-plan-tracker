@@ -18,10 +18,18 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// SQLite Database
-builder.Services.AddDbContext<AppDbContext>(opts =>
-    opts.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Data Source=weeklyplanner.db"));
+// Database — SQL Server in production, SQLite locally
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (builder.Environment.IsProduction() && connectionString != null && connectionString.Contains("database.windows.net"))
+{
+    builder.Services.AddDbContext<AppDbContext>(opts =>
+        opts.UseSqlServer(connectionString));
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(opts =>
+        opts.UseSqlite(connectionString ?? "Data Source=weeklyplanner.db"));
+}
 
 // Register services
 builder.Services.AddScoped<ITeamMemberService, TeamMemberService>();
