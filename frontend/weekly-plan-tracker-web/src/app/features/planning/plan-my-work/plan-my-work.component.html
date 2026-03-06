@@ -233,14 +233,14 @@
           <div style="flex: 1">
             <div style="font-weight: 600; font-size: 0.92rem">
               {{ item.title }}
-              @if (plannedIds.has(item.id)) {
+              @if (whoPickedItem(item.id)) {
                 <span
                   style="
                     font-size: 0.75rem;
                     color: var(--text-muted);
                     margin-left: 0.4rem;
                   "
-                  >(Someone picked this)</span
+                  >({{ whoPickedItem(item.id) }} is working on this)</span
                 >
               }
             </div>

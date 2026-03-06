@@ -71,6 +71,18 @@ export class PlanMyWorkComponent implements OnInit {
     );
   }
 
+  whoPickedItem(backlogItemId: string): string | null {
+    const names: string[] = [];
+    for (const p of this.allPlans) {
+      if (p.memberId === this.memberId) continue;
+      const found = p.taskAssignments.find(
+        (t) => t.backlogItemId === backlogItemId,
+      );
+      if (found) names.push(p.memberName);
+    }
+    return names.length > 0 ? names.join(', ') : null;
+  }
+
   getCategoryBudget(category: string): {
     budget: number;
     claimed: number;
