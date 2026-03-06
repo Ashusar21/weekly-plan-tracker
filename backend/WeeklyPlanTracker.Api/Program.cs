@@ -30,13 +30,16 @@ builder.Services.AddScoped<IPlanningWeekService, PlanningWeekService>();
 builder.Services.AddScoped<IMemberPlanService, MemberPlanService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
 
-// CORS — allow Angular dev server
+// CORS — allow Angular dev server and production
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+        policy.WithOrigins(
+            "http://localhost:4200",
+            "https://brave-coast-086bb810f.6.azurestaticapps.net"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 });
 
 var app = builder.Build();
@@ -45,10 +48,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (app.Environment.EnvironmentName == "Testing")
-        db.Database.EnsureCreated();
-    else
-        db.Database.Migrate();
+    db.Database.Migrate();
 }
 
 if (app.Environment.IsDevelopment())
@@ -62,5 +62,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-public partial class Program { }

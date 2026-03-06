@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:5020/api'
+  apiUrl: 'https://wpt-api-ashusar.azurewebsites.net/api'
 };
