@@ -28,9 +28,15 @@ jobs:
       - name: Zip publish output
         run: cd publish && zip -r ../publish.zip .
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          app-name: wpt-api-ashusar
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: publish.zip
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App
+        run: |
+          az webapp deploy \
+            --name wpt-api-ashusar \
+            --resource-group weekly-plan-tracker-rg \
+            --src-path publish.zip \
+            --type zip
