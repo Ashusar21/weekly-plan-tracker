@@ -29,7 +29,7 @@ builder.Services.AddScoped<IProgressService, ProgressService>();
 
 builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular", policy =>
-        policy.WithOrigins("http://localhost:4200", "https://brave-coast-086bb810f.6.azurestaticapps.net")
+        policy.WithOrigins("http://localhost:4200", "https://brave-coast-086bb810f.6.azurestaticapps.net", "https://weekly-plan-tracker-teal.vercel.app")
               .AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
