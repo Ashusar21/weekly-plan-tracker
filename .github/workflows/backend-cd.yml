@@ -1,6 +1,7 @@
 name: Backend CD
 
 on:
+  workflow_dispatch:
   push:
     branches: [dev]
     paths:
@@ -8,7 +9,8 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on:
+  workflow_dispatch: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,7 +18,8 @@ jobs:
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version:
+  workflow_dispatch: '10.0.x'
 
       - name: Restore
         run: dotnet restore backend/WeeklyPlanTracker.sln
