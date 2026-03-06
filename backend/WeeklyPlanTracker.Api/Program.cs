@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using WeeklyPlanTracker.Core.Interfaces;
 using WeeklyPlanTracker.Infrastructure.Data;
 using WeeklyPlanTracker.Infrastructure.Services;
@@ -15,14 +14,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (connectionString != null && connectionString.Contains("database.windows.net"))
+if (connectionString != null && connectionString.Contains("neon.tech"))
     builder.Services.AddDbContext<AppDbContext>(opts =>
-        opts.UseSqlServer(connectionString)
-            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
+        opts.UseNpgsql(connectionString));
 else
     builder.Services.AddDbContext<AppDbContext>(opts =>
-        opts.UseSqlite(connectionString ?? "Data Source=weeklyplanner.db")
-            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
+        opts.UseSqlite(connectionString ?? "Data Source=weeklyplanner.db"));
 
 builder.Services.AddScoped<ITeamMemberService, TeamMemberService>();
 builder.Services.AddScoped<IBacklogService, BacklogService>();

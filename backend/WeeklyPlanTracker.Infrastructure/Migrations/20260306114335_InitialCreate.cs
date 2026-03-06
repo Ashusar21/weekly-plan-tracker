@@ -15,13 +15,13 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
                 name: "BacklogItems",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false),
-                    Category = table.Column<int>(type: "INTEGER", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    EstimatedEffort = table.Column<double>(type: "REAL", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    Category = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    EstimatedEffort = table.Column<double>(type: "double precision", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -32,13 +32,13 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
                 name: "PlanningWeeks",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PlanningDate = table.Column<string>(type: "TEXT", nullable: false),
-                    ExecutionStartDate = table.Column<string>(type: "TEXT", nullable: false),
-                    ExecutionEndDate = table.Column<string>(type: "TEXT", nullable: false),
-                    State = table.Column<int>(type: "INTEGER", nullable: false),
-                    TeamCapacity = table.Column<int>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PlanningDate = table.Column<string>(type: "text", nullable: false),
+                    ExecutionStartDate = table.Column<string>(type: "text", nullable: false),
+                    ExecutionEndDate = table.Column<string>(type: "text", nullable: false),
+                    State = table.Column<int>(type: "integer", nullable: false),
+                    TeamCapacity = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -49,11 +49,11 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
                 name: "TeamMembers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    IsLead = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    IsLead = table.Column<bool>(type: "boolean", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -64,11 +64,11 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
                 name: "CategoryAllocations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PlanningWeekId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Category = table.Column<int>(type: "INTEGER", nullable: false),
-                    Percentage = table.Column<int>(type: "INTEGER", nullable: false),
-                    BudgetHours = table.Column<double>(type: "REAL", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PlanningWeekId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Category = table.Column<int>(type: "integer", nullable: false),
+                    Percentage = table.Column<int>(type: "integer", nullable: false),
+                    BudgetHours = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -85,11 +85,11 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
                 name: "MemberPlans",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PlanningWeekId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    MemberId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    IsReady = table.Column<bool>(type: "INTEGER", nullable: false),
-                    TotalPlannedHours = table.Column<double>(type: "REAL", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PlanningWeekId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsReady = table.Column<bool>(type: "boolean", nullable: false),
+                    TotalPlannedHours = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -112,13 +112,13 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
                 name: "TaskAssignments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    MemberPlanId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    BacklogItemId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    CommittedHours = table.Column<double>(type: "REAL", nullable: false),
-                    HoursCompleted = table.Column<double>(type: "REAL", nullable: false),
-                    ProgressStatus = table.Column<int>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    MemberPlanId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BacklogItemId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CommittedHours = table.Column<double>(type: "double precision", nullable: false),
+                    HoursCompleted = table.Column<double>(type: "double precision", nullable: false),
+                    ProgressStatus = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -141,15 +141,15 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
                 name: "ProgressUpdates",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TaskAssignmentId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    UpdatedBy = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PreviousHoursCompleted = table.Column<double>(type: "REAL", nullable: false),
-                    NewHoursCompleted = table.Column<double>(type: "REAL", nullable: false),
-                    PreviousStatus = table.Column<int>(type: "INTEGER", nullable: false),
-                    NewStatus = table.Column<int>(type: "INTEGER", nullable: false),
-                    Note = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TaskAssignmentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    PreviousHoursCompleted = table.Column<double>(type: "double precision", nullable: false),
+                    NewHoursCompleted = table.Column<double>(type: "double precision", nullable: false),
+                    PreviousStatus = table.Column<int>(type: "integer", nullable: false),
+                    NewStatus = table.Column<int>(type: "integer", nullable: false),
+                    Note = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
