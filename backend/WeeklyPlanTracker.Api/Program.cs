@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using WeeklyPlanTracker.Core.Interfaces;
 using WeeklyPlanTracker.Infrastructure.Data;
 using WeeklyPlanTracker.Infrastructure.Services;
@@ -9,7 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
     {
-        // Serialize enums as strings for the Angular frontend
         opts.JsonSerializerOptions.Converters.Add(
             new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
@@ -23,12 +23,14 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 if (builder.Environment.IsProduction() && connectionString != null && connectionString.Contains("database.windows.net"))
 {
     builder.Services.AddDbContext<AppDbContext>(opts =>
-        opts.UseSqlServer(connectionString));
+        opts.UseSqlServer(connectionString)
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 }
 else
 {
     builder.Services.AddDbContext<AppDbContext>(opts =>
-        opts.UseSqlite(connectionString ?? "Data Source=weeklyplanner.db"));
+        opts.UseSqlite(connectionString ?? "Data Source=weeklyplanner.db")
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 }
 
 // Register services
@@ -56,7 +58,10 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    if (app.Environment.EnvironmentName == "Testing")
+        db.Database.EnsureCreated();
+    else
+        db.Database.Migrate();
 }
 
 if (app.Environment.IsDevelopment())
@@ -70,3 +75,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
