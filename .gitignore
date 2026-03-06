@@ -34,3 +34,5 @@ TestResults/
 coverage/
 backend/coverage2/
 backend/coverlet.runsettings
+backend/WeeklyPlanTracker.Api/publish/
+backend/WeeklyPlanTracker.Api/publish.zip

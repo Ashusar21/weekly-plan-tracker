@@ -1,0 +1,32 @@
+name: Backend CD
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore backend/WeeklyPlanTracker.sln
+
+      - name: Publish
+        run: dotnet publish backend/WeeklyPlanTracker.Api/WeeklyPlanTracker.Api.csproj -c Release -o ./publish
+
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: wpt-api-ashusar
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish
