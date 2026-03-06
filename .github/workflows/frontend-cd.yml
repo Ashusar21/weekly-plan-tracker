@@ -9,8 +9,7 @@ on:
 
 jobs:
   deploy:
-    runs-on:
-  workflow_dispatch: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,8 +17,7 @@ jobs:
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version:
-  workflow_dispatch: '22'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: frontend/weekly-plan-tracker-web/package-lock.json
 
@@ -36,9 +34,6 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action:
-  workflow_dispatch: upload
-          app_location:
-  workflow_dispatch: frontend/weekly-plan-tracker-web
-          output_location:
-  workflow_dispatch: dist/weekly-plan-tracker-web/browser
+          action: upload
+          app_location: frontend/weekly-plan-tracker-web
+          output_location: dist/weekly-plan-tracker-web/browser
