@@ -47,7 +47,7 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BacklogItems");
+                    b.ToTable("BacklogItems", (string)null);
                 });
 
             modelBuilder.Entity("WeeklyPlanTracker.Core.Entities.CategoryAllocation", b =>
@@ -72,7 +72,7 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
 
                     b.HasIndex("PlanningWeekId");
 
-                    b.ToTable("CategoryAllocations");
+                    b.ToTable("CategoryAllocations", (string)null);
                 });
 
             modelBuilder.Entity("WeeklyPlanTracker.Core.Entities.MemberPlan", b =>
@@ -99,7 +99,7 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
 
                     b.HasIndex("PlanningWeekId");
 
-                    b.ToTable("MemberPlans");
+                    b.ToTable("MemberPlans", (string)null);
                 });
 
             modelBuilder.Entity("WeeklyPlanTracker.Core.Entities.PlanningWeek", b =>
@@ -131,7 +131,7 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PlanningWeeks");
+                    b.ToTable("PlanningWeeks", (string)null);
                 });
 
             modelBuilder.Entity("WeeklyPlanTracker.Core.Entities.ProgressUpdate", b =>
@@ -170,7 +170,7 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
 
                     b.HasIndex("TaskAssignmentId");
 
-                    b.ToTable("ProgressUpdates");
+                    b.ToTable("ProgressUpdates", (string)null);
                 });
 
             modelBuilder.Entity("WeeklyPlanTracker.Core.Entities.TaskAssignment", b =>
@@ -203,7 +203,7 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
 
                     b.HasIndex("MemberPlanId");
 
-                    b.ToTable("TaskAssignments");
+                    b.ToTable("TaskAssignments", (string)null);
                 });
 
             modelBuilder.Entity("WeeklyPlanTracker.Core.Entities.TeamMember", b =>
@@ -228,7 +228,7 @@ namespace WeeklyPlanTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TeamMembers");
+                    b.ToTable("TeamMembers", (string)null);
                 });
 
             modelBuilder.Entity("WeeklyPlanTracker.Core.Entities.CategoryAllocation", b =>
