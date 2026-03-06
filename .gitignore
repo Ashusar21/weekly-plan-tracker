@@ -32,3 +32,5 @@ Thumbs.db
 # ── Test results ──────────────────────────────
 TestResults/
 coverage/
+backend/coverage2/
+backend/coverlet.runsettings
