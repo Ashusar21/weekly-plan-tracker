@@ -22,21 +22,8 @@ jobs:
       - name: Restore
         run: dotnet restore backend/WeeklyPlanTracker.sln
 
-      - name: Publish
-        run: dotnet publish backend/WeeklyPlanTracker.Api/WeeklyPlanTracker.Api.csproj -c Release -o ./publish
+      - name: Build
+        run: dotnet build backend/WeeklyPlanTracker.sln -c Release
 
-      - name: Zip publish output
-        run: cd publish && zip -r ../publish.zip .
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure Web App
-        run: |
-          az webapp deploy \
-            --name wpt-api-ashusar \
-            --resource-group weekly-plan-tracker-rg \
-            --src-path publish.zip \
-            --type zip
+      - name: Test
+        run: dotnet test backend/WeeklyPlanTracker.sln
